@@ -1,6 +1,6 @@
 # Brief do produto
 
-> Versão 1 · 20/10/2026 · aprovado por: _pendente (Celio)_
+> Versão 1.1 · 20/10/2026 · **Fase atual: uso pessoal** (Celio e convidados). Abertura ao público adiada até a D1.
 
 ## Em uma frase
 O app de passagens que diz **quando voar, qual opção comprar e se é melhor comprar agora ou esperar** — com o preço final real e sem letras miúdas.

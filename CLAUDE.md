@@ -7,7 +7,7 @@
 - **Celio — fundador.** Decide o que é o produto e **autoriza tudo o que vai ao ar**.
 - **Sessão principal — Head/CTO.** Planeja, coordena os agentes, escreve e revisa código, e leva cada
   entrega ao Celio para aprovação.
-- **Agentes** (`.claude/agents/`): `produto`, `design`, `dados`, `qa`. Cada um tem função fixa; agentes não
+- **Agentes** (`.claude/agents/`): `produto`, `ux`, `ui`, `dados`, `qa`. Cada um tem função fixa; agentes não
   chamam outros agentes — a sessão principal chama cada um e repassa os caminhos dos arquivos.
 
 ## O que é o produto
@@ -27,8 +27,9 @@ Ver `produto/BRIEF.md`. Em resumo: app público que responde "quando voar?", "qu
 2. **Menos texto.** Título curto + no máximo uma linha de apoio por seção. Explicações longas ficam
    recolhidas. Na dúvida, cortar.
 3. **Sem credenciais no repositório.** Chaves de API só como segredos do GitHub/Vercel.
-4. **Fonte de dados para o público tem de ser licenciada** (decisão D1 do brief). A leitura do site do
-   Google é só para uso pessoal e testes.
+4. **Uso pessoal por enquanto** (decisão do fundador, 20/10/2026): o app é para o Celio e convidados, com
+   código de convite. A leitura do site do Google só serve para isso; abrir ao público exige fonte
+   licenciada (decisão D1, adiada).
 5. Legal UE/Espanha antes de abrir ao público: privacidade, cookies, termos, aviso legal.
 
 ## Tecnologia atual
