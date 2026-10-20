@@ -194,7 +194,7 @@ footer { color: var(--muted); font-size: .75rem; padding: 10px 0 40px; }
 
   <section class="sec" id="s-quando" data-nav="Quando voar">
     <div class="sec-head"><h2>Quando voar</h2><span class="legend">barato <i class="legend-bar"></i> caro</span></div>
-    <p class="sub" id="cal-sub">Preço total da viagem (ida + volta). ✓ conferido · ≈ estimado. Toque num dia.</p>
+    <p class="sub" id="cal-sub">Preço total da viagem (ida + volta). ✓ ida e volta conferida · ↓ comprando junto deve sair menos. Toque num dia.</p>
     <h3 id="h-cal-ida">Ida</h3>
     <div class="months" id="cal-ida"></div>
     <div class="detail" id="detail-ida" hidden></div>
@@ -207,7 +207,7 @@ footer { color: var(--muted); font-size: .75rem; padding: 10px 0 40px; }
 
   <section class="sec" id="s-datas" data-nav="Comparar datas">
     <h2>Comparar datas</h2>
-    <p class="sub">Preço final de cada ida × volta. ★ 3 melhores · ○ conferido · ≈ estimado.</p>
+    <p class="sub">Preço total de cada ida × volta. ★ 3 melhores · ○ ida e volta conferida.</p>
     <div class="scroll"><div id="matrix" class="chart" style="min-width:860px;height:660px"></div></div>
   </section>
 
@@ -324,12 +324,15 @@ function finalPrice(o, r) {
   // Estimativa da compra conjunta: mediana dos preços de ida e volta já conferidos desta companhia.
   const f = o.al === r.al ? D.rt_ref[o.al] : null;
   const est = f && f.n >= 2 && f.med < sum ? f.med : null;
+  // Na tela só aparecem preços reais (conferido ou soma das 2 passagens). A estimativa da compra
+  // conjunta (est) é mostrada como dica "↓ juntas ≈", sem mudar o número nem a ordem.
   let price = sum, kind = "sum";
-  if (conf != null) { if (conf <= sum) { price = conf; kind = "conf"; } }
-  else if (est != null && est < price) { price = est; kind = "est"; }
-  return { price, kind, sum, conf, est, f, link: c ? c.link : null };
+  if (conf != null && conf <= sum) { price = conf; kind = "conf"; }
+  const hint = kind === "sum" && est != null && est < sum ? est : null;
+  return { price, kind, sum, conf, est: hint, f, link: c ? c.link : null };
 }
-const kindLabel = k => k === "conf" ? "ida e volta juntas" : k === "est" ? "juntas (estimado)" : "2 passagens";
+const kindLabel = k => k === "conf" ? "ida e volta juntas" : "2 passagens";
+const estHint = fp => fp.est != null ? `juntas deve sair ≈ ${money(fp.est)} (já conferido entre ${money(fp.f.min)} e ${money(fp.f.max)})` : "";
 
 function combos(perDay = 3) {
   const outs = [], rets = [];
@@ -543,8 +546,9 @@ function tripLine(dir, date) {
   if (!c) return "";
   const outro = dir === "ida" ? `volta ${dm(c.r.date)}` : `ida ${dm(c.o.date)}`;
   const cia = c.o.al === c.r.al ? esc(c.o.aln || c.o.al) : `${esc(c.o.aln || c.o.al)} + ${esc(c.r.aln || c.r.al)}`;
-  const nota = c.fp.kind === "conf" ? "conferido" : c.fp.kind === "est" ? "estimado pela compra conjunta" : "2 passagens";
-  return `<div class="trip"><b>${kindMark(c.fp.kind)} ${money(c.fp.price)}</b> viagem completa · ${outro} · ${cia} · ${nota}</div>`;
+  const nota = c.fp.kind === "conf" ? "ida e volta conferida" : "2 passagens";
+  const dica = c.fp.est != null ? `<div>↓ ${estHint(c.fp)}</div>` : "";
+  return `<div class="trip"><b>${kindMark(c.fp.kind)} ${money(c.fp.price)}</b> viagem completa · ${outro} · ${cia} · ${nota}${dica}</div>`;
 }
 function dayDetail(dir, date, compact) {
   const opts = G.get(dir + "|" + date) || [];
@@ -578,7 +582,8 @@ function renderCalendar(dir) {
       const opts = G.get(dir + "|" + s);
       const pr = priceOf(s);
       if (!opts || pr == null) { html += `<div class="cell none"><span class="dn">${d}</span><span class="pr">—</span></div>`; continue; }
-      const mk = HAS_RET ? kindMark(TRIP[dir].get(s).fp.kind) : "";
+      const fpd = HAS_RET ? TRIP[dir].get(s).fp : null;
+      const mk = fpd ? (fpd.kind === "conf" ? "✓" : fpd.est != null ? "↓" : "") : "";
       html += `<button class="cell${state.sel[dir] === s ? " sel" : ""}" style="background:${sc(pr)}" data-date="${s}" ` +
         `aria-label="${dm(s)}: ${money(pr)}"><span class="dn">${d}</span><span class="pr">${mk ? `<small>${mk}</small>` : ""}${Math.round(pr).toLocaleString("pt-BR")}</span></button>`;
     }
@@ -664,9 +669,9 @@ function renderMatrix() {
       const x = xs[p.value[0]], y = ys[p.value[1]], c = best.get(x + "|" + y);
       if (!c) return "";
       const { o, r, fp } = c;
-      return `<b>${dm(x)} → ${dm(y)}</b><br>${fp.kind === "est" ? "≈ " : ""}<b>${money(fp.price)}</b> · ${kindLabel(fp.kind)}<br>` +
+      return `<b>${dm(x)} → ${dm(y)}</b><br><b>${money(fp.price)}</b> · ${kindLabel(fp.kind)}<br>` +
         `ida ${esc(o.aln || o.al)} ${money(o.p)} + volta ${esc(r.aln || r.al)} ${money(r.p)} = ${money(fp.sum)}` +
-        (fp.kind === "est" ? `<br>estimado: ida e volta desta companhia conferida entre ${money(fp.f.min)} e ${money(fp.f.max)} (${fp.f.n} conferências)` : "");
+        (fp.est != null ? `<br>↓ ${estHint(fp)}` : "");
     } }),
     xAxis: Object.assign(axis(), { type: "category", data: xs.map(dm), splitLine: { show: false }, name: "ida", nameLocation: "middle", nameGap: 36, nameTextStyle: { color: css("--muted") } }),
     yAxis: Object.assign(axis(), { type: "category", data: ys.map(dm), splitLine: { show: false } }),
@@ -718,7 +723,7 @@ function renderTop() {
   for (const x of rows) { const k = x.o.fl + "|" + x.r.fl; if ((per[k] = (per[k] || 0) + 1) <= 2) top.push(x); if (top.length === 10) break; }
   const leg = (x, lbl) => `<div>${lbl} ${dm(x.date)} · ${hhmm(x.dep)}→${hhmm(x.arr)} · ${hm(x.tot)}${x.st ? " · conexão " + x.cn.map(hm).join(", ") : " · direto"} · <a href="${esc(x.url)}" target="_blank" rel="noopener">↗</a></div>`;
   el.innerHTML = top.map((x, i) => `<div class="item"><span class="rank">${i + 1}</span><div class="legs"><b>${x.o.al === x.r.al ? esc(x.o.aln || x.o.al) : esc(x.o.aln || x.o.al) + " + " + esc(x.r.aln || x.r.al)}</b>` +
-    leg(x.o, "Ida") + leg(x.r, "Volta") + `</div><div class="money"><b>${x.fp.kind === "est" ? "≈ " : ""}${money(x.fp.price)}</b><div>${kindLabel(x.fp.kind)}</div><div>score ${x.score.toFixed(0)}</div></div></div>`).join("");
+    leg(x.o, "Ida") + leg(x.r, "Volta") + `</div><div class="money"><b>${money(x.fp.price)}</b><div>${kindLabel(x.fp.kind)}</div>${x.fp.est != null ? `<div>↓ juntas ≈ ${money(x.fp.est)}</div>` : ""}<div>score ${x.score.toFixed(0)}</div></div></div>`).join("");
   $("#top-sub").textContent = "Melhor equilíbrio entre preço final, duração e conexões. Pesos nos filtros.";
 }
 

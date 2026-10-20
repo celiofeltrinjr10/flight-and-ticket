@@ -167,12 +167,15 @@ class Runner:
             return True
 
         for h in cfg.destaques:
-            n = 0
+            n, idas = 0, set()
             for sc, (o, r) in ranked:
                 if n >= cfg.vagas_por_destaque:
                     break
+                if o.date in idas:  # uma combinação por data de ida, para espalhar as conferências
+                    continue
                 if cfg.destaque(o) is h and cfg.destaque(r) is h and take(sc, o, r):
                     n += 1
+                    idas.add(o.date)
         for sc, (o, r) in ranked:
             if len(picked) >= cfg.combinacoes:
                 break
