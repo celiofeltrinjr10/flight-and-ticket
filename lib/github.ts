@@ -5,7 +5,8 @@
 //   GITHUB_BRANCH ex. "main"
 
 const REPO = process.env.GITHUB_REPO || "celiofeltrinjr10/voos-bcn-sp";
-const BRANCH = process.env.GITHUB_BRANCH || "main";
+// Na prévia de um Pull Request a Vercel informa o branch; assim a prévia usa o robô e os dados do próprio PR.
+const BRANCH = process.env.GITHUB_BRANCH || process.env.VERCEL_GIT_COMMIT_REF || "main";
 const API = "https://api.github.com";
 
 function headers(extra: Record<string, string> = {}): HeadersInit {
