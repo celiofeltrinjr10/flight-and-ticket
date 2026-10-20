@@ -1,0 +1,71 @@
+{
+  "viagem": {
+    "origem": "BCN",
+    "destino": "SAO",
+    "aeroportos_origem": [
+      "BCN"
+    ],
+    "aeroportos_destino": [
+      "GRU",
+      "VCP",
+      "CGH"
+    ],
+    "ida": {
+      "inicio": "2026-11-10",
+      "fim": "2026-11-24"
+    },
+    "volta": {
+      "inicio": "2026-12-08",
+      "fim": "2026-12-22"
+    },
+    "adultos": 1,
+    "classe": "economy",
+    "moeda": "EUR",
+    "data_limite_chegada": null
+  },
+  "filtros": {
+    "max_escalas": 1,
+    "max_horas_por_trecho": 16
+  },
+  "destaques": [
+    {
+      "id": "latam",
+      "nome": "LATAM direto",
+      "companhias": [
+        "LA"
+      ],
+      "somente_direto": true
+    },
+    {
+      "id": "ram",
+      "nome": "Royal Air Maroc",
+      "companhias": [
+        "AT"
+      ],
+      "via": "CMN"
+    }
+  ],
+  "score": {
+    "preco": 0.6,
+    "duracao_total": 0.25,
+    "conexao": 0.15
+  },
+  "fontes": {
+    "etapa_a": "google_ff",
+    "etapa_a_reserva": "google_browser",
+    "etapa_b": "google_browser"
+  },
+  "etapa_b": {
+    "combinacoes": 20,
+    "vagas_por_destaque": 2,
+    "max_por_data": 3,
+    "max_por_par_de_voos": 2
+  },
+  "coleta": {
+    "pausa_min_s": 4,
+    "pausa_max_s": 8,
+    "tentativas": 3,
+    "espera_base_s": 15,
+    "max_falhas_seguidas": 8
+  }
+}
