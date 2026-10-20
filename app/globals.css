@@ -1,0 +1,63 @@
+/* Mesmos tokens do painel de resultados (tracker/dashboard_template.html). */
+:root {
+  color-scheme: light;
+  --bg: #f7f7f5; --surface: #ffffff; --surface-2: #f3f2ef; --border: #e4e3de; --border-strong: #cfcdc6;
+  --text: #0b0b0b; --text-2: #52514e; --muted: #85847e; --accent: #2a78d6; --accent-bg: #e3eefb;
+  --danger: #b42318;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #121211; --surface: #1a1a19; --surface-2: #232321; --border: #33332f; --border-strong: #4a4a45;
+    --text: #f0efec; --text-2: #c3c2b7; --muted: #8f8e86; --accent: #5b9cea; --accent-bg: #1c2d44;
+    --danger: #f97066;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #121211; --surface: #1a1a19; --surface-2: #232321; --border: #33332f; --border-strong: #4a4a45;
+  --text: #f0efec; --text-2: #c3c2b7; --muted: #8f8e86; --accent: #5b9cea; --accent-bg: #1c2d44;
+  --danger: #f97066;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { background: var(--bg); color: var(--text); font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+.page { max-width: 520px; margin: 0 auto; padding: 20px max(16px, env(safe-area-inset-right, 0px)) 48px max(16px, env(safe-area-inset-left, 0px)); }
+.top { display: flex; justify-content: space-between; align-items: center; font-size: .9rem; }
+.brand { font-weight: 600; color: var(--text); }
+.top a.quiet { color: var(--muted); }
+h1 { font-size: 2rem; line-height: 1.15; margin: 48px 0 12px; text-wrap: balance; letter-spacing: -.01em; }
+.lead { color: var(--text-2); margin: 0 0 28px; }
+
+form.search { display: grid; gap: 10px; }
+.row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.field { display: grid; gap: 2px; border: 1px solid var(--border-strong); border-radius: 10px; padding: 8px 12px; background: var(--surface); }
+.field span { font-size: .72rem; color: var(--muted); }
+.field input, .field select { border: 0; background: transparent; color: var(--text); font: inherit; padding: 0; outline: none; width: 100%; min-width: 0; }
+.field:focus-within { border-color: var(--accent); }
+.dates { display: grid; grid-template-columns: 1fr auto 1fr; gap: 6px; align-items: center; }
+.dates i { color: var(--muted); font-style: normal; font-size: .85rem; }
+button.primary { margin-top: 4px; background: var(--text); color: var(--bg); border: 0; border-radius: 10px; padding: 13px; font: inherit; font-weight: 600; cursor: pointer; }
+button.primary:disabled { opacity: .6; cursor: wait; }
+.invite { display: flex; gap: 8px; align-items: center; font-size: .82rem; color: var(--muted); }
+.invite input { flex: 1; min-width: 0; border: 1px solid var(--border); border-radius: 8px; padding: 6px 8px; background: var(--surface); color: var(--text); font: inherit; }
+.error { color: var(--danger); font-size: .88rem; margin: 2px 0 0; }
+
+.label { font-size: .8rem; color: var(--muted); margin: 36px 0 8px; }
+.route { display: flex; justify-content: space-between; align-items: center; gap: 12px; border: 1px solid var(--border); border-radius: 14px; padding: 12px 14px; background: var(--surface); color: var(--text); }
+.route:hover { border-color: var(--accent); text-decoration: none; }
+.route small { display: block; color: var(--text-2); font-size: .8rem; }
+.route .price { text-align: right; font-weight: 600; white-space: nowrap; }
+.route .price small { color: var(--muted); font-weight: 400; }
+.routes { display: grid; gap: 8px; }
+
+.status { margin-top: 64px; text-align: center; }
+.status h1 { margin-top: 0; font-size: 1.5rem; }
+.bar { height: 6px; background: var(--surface-2); border-radius: 3px; overflow: hidden; margin: 24px 0 10px; }
+.bar div { height: 100%; background: var(--accent); transition: width .8s ease; }
+.muted { color: var(--muted); font-size: .88rem; }
+.prose p, .prose li { color: var(--text-2); }
+@media (prefers-reduced-motion: reduce) { .bar div { transition: none; } }

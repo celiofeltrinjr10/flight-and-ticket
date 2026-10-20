@@ -1,7 +1,8 @@
 name: Busca sob demanda
+run-name: "Busca ${{ inputs.origem }}-${{ inputs.destino }} ${{ inputs.slug }}"
 
 # Actions → "Busca sob demanda" → Run workflow → preencha e confirme.
-# O resultado aparece em https://<usuário>.github.io/voos-bcn-sp/buscas/
+# O resultado aparece em https://<usuário>.github.io/flight-and-ticket/buscas/
 
 on:
   workflow_dispatch:
@@ -43,6 +44,10 @@ on:
         description: "Data-limite de chegada da ida (opcional)"
         required: false
         default: ""
+      slug:
+        description: "Identificador (preenchido pelo site; deixe vazio)"
+        required: false
+        default: ""
 
 permissions:
   contents: write
@@ -82,13 +87,14 @@ jobs:
           IN_ESCALAS: ${{ inputs.max_escalas }}
           IN_MOEDA: ${{ inputs.moeda }}
           IN_LIMITE: ${{ inputs.data_limite }}
+          IN_SLUG: ${{ inputs.slug }}
         run: >
           python -m tracker.collect --busca
           --origem "$IN_ORIGEM" --destino "$IN_DESTINO"
           --ida "$IN_IDA" --volta "$IN_VOLTA"
           --adultos "$IN_ADULTOS" --classe "$IN_CLASSE"
           --max-escalas "$IN_ESCALAS" --moeda "$IN_MOEDA"
-          --data-limite "$IN_LIMITE"
+          --data-limite "$IN_LIMITE" --slug "$IN_SLUG"
 
       - name: Gerar páginas
         run: python -m tracker.build_dashboard
@@ -97,7 +103,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data docs
+          git add data docs painel.html
           git commit -m "Busca $IN_ORIGEM-$IN_DESTINO $(TZ=Europe/Madrid date +'%Y-%m-%d %H:%M')" || echo "Nada novo"
           git pull --rebase
           git push

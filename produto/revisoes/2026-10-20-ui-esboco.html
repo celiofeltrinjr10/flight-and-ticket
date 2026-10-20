@@ -1,0 +1,567 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Esboço de interface · 20/10/2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+/* =========================================================
+   TOKENS — direção "Cartão de embarque + painel de partidas"
+   Claro = papel do cartão · Escuro = saguão à noite
+   ========================================================= */
+:root {
+  color-scheme: light;
+  --bg: #F3EFE6;          /* papel */
+  --surface: #FFFDF8;     /* cartão */
+  --surface-2: #EAE4D7;
+  --line: #DDD5C4;
+  --line-strong: #B9AF9A;
+  --ink: #121A2B;         /* tinta azul-marinho */
+  --ink-2: #46506A;
+  --muted: #5F6577;
+  --link: #2449B8;
+  --sign: #FFC629;        /* amarelo de sinalização */
+  --on-sign: #121A2B;
+  --go: #13734A;  --go-bg: #DCEFE3; --go-ink: #0E5A39;
+  --stop: #B4361E; --stop-bg: #F5D9CF; --stop-ink: #8E2A16;
+  --board: #121A2B; --board-2: #1C263B; --board-ink: #F3EFE6; --board-dim: #9AA3B8; --board-line: #2A3550;
+  --shadow: 0 1px 0 rgba(18,26,43,.04), 0 10px 28px -12px rgba(18,26,43,.22);
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --bg: #0A0F1C; --surface: #121A2B; --surface-2: #1A2438; --line: #26324A; --line-strong: #3A4864;
+    --ink: #F3EFE6; --ink-2: #B8BFD0; --muted: #8C95AB; --link: #8FB0FF;
+    --sign: #FFC629; --on-sign: #121A2B;
+    --go: #4CC38A; --go-bg: #143A2C; --go-ink: #9BE8C2;
+    --stop: #FF7A59; --stop-bg: #3A1D1A; --stop-ink: #FFB4A0;
+    --board: #03060D; --board-2: #0E1626; --board-ink: #F3EFE6; --board-dim: #8C95AB; --board-line: #26324A;
+    --shadow: 0 0 0 1px #26324A;
+  }
+}
+/* Alternar tema sem JavaScript (checkbox + :has) */
+:root:has(#inv:checked) {
+  color-scheme: dark;
+  --bg: #0A0F1C; --surface: #121A2B; --surface-2: #1A2438; --line: #26324A; --line-strong: #3A4864;
+  --ink: #F3EFE6; --ink-2: #B8BFD0; --muted: #8C95AB; --link: #8FB0FF;
+  --go: #4CC38A; --go-bg: #143A2C; --go-ink: #9BE8C2;
+  --stop: #FF7A59; --stop-bg: #3A1D1A; --stop-ink: #FFB4A0;
+  --board: #03060D; --board-2: #0E1626; --board-ink: #F3EFE6; --board-dim: #8C95AB; --board-line: #26324A;
+  --shadow: 0 0 0 1px #26324A;
+}
+@media (prefers-color-scheme: dark) {
+  :root:has(#inv:checked) {
+    color-scheme: light;
+    --bg: #F3EFE6; --surface: #FFFDF8; --surface-2: #EAE4D7; --line: #DDD5C4; --line-strong: #B9AF9A;
+    --ink: #121A2B; --ink-2: #46506A; --muted: #5F6577; --link: #2449B8;
+    --go: #13734A; --go-bg: #DCEFE3; --go-ink: #0E5A39;
+    --stop: #B4361E; --stop-bg: #F5D9CF; --stop-ink: #8E2A16;
+    --board: #121A2B; --board-2: #1C263B; --board-ink: #F3EFE6; --board-dim: #9AA3B8; --board-line: #2A3550;
+    --shadow: 0 1px 0 rgba(18,26,43,.04), 0 10px 28px -12px rgba(18,26,43,.22);
+  }
+}
+
+/* Tipografia */
+:root {
+  --f-text: "Barlow", "Segoe UI", Roboto, system-ui, sans-serif;
+  --f-cond: "Barlow Condensed", "Roboto Condensed", "Arial Narrow", sans-serif;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { background: var(--bg); color: var(--ink); font: 400 16px/1.45 var(--f-text); -webkit-font-smoothing: antialiased; }
+.num, .price, .time, .iata, .cell b { font-variant-numeric: tabular-nums lining-nums; }
+a { color: var(--link); }
+
+/* ---------- moldura da prancha ---------- */
+.sheet { max-width: 1320px; margin: 0 auto; padding: 24px 16px 64px; }
+.sheet-head { display: flex; flex-wrap: wrap; gap: 8px 24px; align-items: baseline; justify-content: space-between; margin-bottom: 20px; }
+.sheet-head h1 { font: 600 28px/1.1 var(--f-cond); letter-spacing: .01em; margin: 0; }
+.sheet-head p { margin: 0; color: var(--muted); font-size: 14px; }
+.toggle { font-size: 14px; color: var(--ink-2); display: inline-flex; gap: 8px; align-items: center; cursor: pointer; }
+.toggle input { width: 18px; height: 18px; accent-color: var(--ink); }
+.phones { display: flex; flex-wrap: wrap; gap: 32px; justify-content: center; }
+.col { width: 390px; max-width: 100%; }
+.cap { font: 600 13px/1 var(--f-cond); letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin: 0 0 10px 4px; }
+.phone { width: 100%; height: 844px; overflow-y: auto; background: var(--bg); border: 1px solid var(--line-strong);
+  border-radius: 36px; box-shadow: var(--shadow); position: relative; scrollbar-width: thin; }
+@media (max-width: 440px) { .phone { height: auto; border-radius: 0; border-left: 0; border-right: 0; } .sheet { padding: 16px 0 48px; } .cap, .sheet-head { margin-left: 16px; margin-right: 16px; } }
+.scr { padding: 16px 20px 32px; }
+
+/* ---------- elementos comuns ---------- */
+.eyebrow { font: 600 12px/1.2 var(--f-cond); letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+.appbar { display: flex; align-items: center; justify-content: space-between; height: 44px; margin-bottom: 8px; }
+.brand { display: inline-flex; align-items: center; gap: 8px; font: 700 18px/1 var(--f-cond); letter-spacing: .04em; text-transform: uppercase; color: var(--ink); text-decoration: none; }
+.brand svg { display: block; }
+.appbar a.quiet { color: var(--ink-2); font-size: 15px; text-decoration: none; }
+.hero { font: 600 46px/0.98 var(--f-cond); letter-spacing: -.005em; margin: 20px 0 10px; }
+.lead { color: var(--ink-2); margin: 0 0 20px; font-size: 16px; }
+
+/* botões */
+.btn { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; min-height: 52px; border-radius: 12px; border: 0;
+  font: 600 17px/1 var(--f-text); cursor: pointer; text-decoration: none; }
+.btn.primary { background: var(--sign); color: var(--on-sign); }
+.btn.ink { background: var(--ink); color: var(--bg); }
+.btn.ghost { background: transparent; color: var(--ink); border: 1.5px solid var(--line-strong); min-height: 48px; font-size: 16px; }
+.btn:focus-visible { outline: 3px solid var(--link); outline-offset: 2px; }
+
+/* ---------- CARTÃO DE EMBARQUE (base) ---------- */
+.pass { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; box-shadow: var(--shadow); position: relative; }
+.perf { position: relative; height: 0; border-top: 2px dashed var(--line-strong); margin: 0 14px; }
+.perf::before, .perf::after { content: ""; position: absolute; top: -12px; width: 22px; height: 22px; border-radius: 50%; background: var(--bg); border: 1px solid var(--line); }
+.perf::before { left: -26px; clip-path: inset(0 0 0 50%); }
+.perf::after { right: -26px; clip-path: inset(0 50% 0 0); }
+
+/* Home: busca */
+.route-pick { display: grid; grid-template-columns: 1fr 44px 1fr; align-items: center; padding: 16px 16px 18px; }
+.ap .iata { display: block; font: 700 44px/1 var(--f-cond); letter-spacing: .02em; margin: 4px 0 2px; }
+.ap .city { font-size: 14px; color: var(--ink-2); }
+.ap.r { text-align: right; }
+.swap { width: 40px; height: 40px; border-radius: 50%; border: 1.5px solid var(--line-strong); background: var(--surface); color: var(--ink);
+  display: grid; place-items: center; justify-self: center; font-size: 18px; }
+.fields { display: grid; grid-template-columns: 1fr 1fr; }
+.fld { padding: 12px 16px; border-top: 1px solid var(--line); min-height: 64px; }
+.fld:nth-child(odd) { border-right: 1px solid var(--line); }
+.fld.wide { grid-column: 1 / -1; border-right: 0; display: flex; justify-content: space-between; align-items: end; }
+.fld:first-child { border-top: 0; }
+.fld .val { display: block; font: 600 22px/1.1 var(--f-cond); margin-top: 4px; }
+.fld .val .to { color: var(--muted); font-weight: 500; padding: 0 4px; }
+.fld .aux { font: 600 13px/1 var(--f-cond); letter-spacing: .04em; color: var(--ink-2); background: var(--surface-2); padding: 6px 8px; border-radius: 999px; white-space: nowrap; }
+.fld .ok { color: var(--go); font-weight: 600; font-family: var(--f-text); font-size: 16px; }
+.pass .act { padding: 14px 16px 16px; }
+.pass .act .hint { margin: 10px 0 0; text-align: center; font-size: 13px; color: var(--muted); }
+
+.list-h { margin: 28px 0 8px; display: flex; justify-content: space-between; align-items: baseline; }
+.routes { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.rrow { display: grid; grid-template-columns: 1fr auto; gap: 2px 12px; align-items: center; padding: 12px 14px; background: var(--surface);
+  border: 1px solid var(--line); border-radius: 12px; color: var(--ink); text-decoration: none; }
+.rrow .iata { font: 700 20px/1 var(--f-cond); letter-spacing: .03em; }
+.rrow .sub { grid-column: 1; font-size: 13px; color: var(--ink-2); }
+.rrow .price { grid-row: 1 / span 2; grid-column: 2; text-align: right; font: 700 24px/1 var(--f-cond); }
+.rrow .price small { display: block; font: 500 12px/1.3 var(--f-text); color: var(--muted); }
+
+/* ---------- PAINEL DE PARTIDAS (board) ---------- */
+.board { background: var(--board); color: var(--board-ink); border-radius: 14px; border: 1px solid var(--board-line); }
+.flaps { display: inline-flex; gap: 3px; }
+.flaps i { font: 700 22px/1 var(--f-cond); font-style: normal; width: 22px; height: 32px; display: grid; place-items: center; background: var(--board-2);
+  border-radius: 4px; position: relative; color: var(--sign); overflow: hidden; }
+.flaps i::after { content: ""; position: absolute; left: 0; right: 0; top: 50%; height: 1px; background: rgba(0,0,0,.55); }
+.flaps.big i { width: 34px; height: 48px; font-size: 34px; border-radius: 6px; }
+.flaps.white i { color: var(--board-ink); }
+
+/* Buscando */
+.trip { padding: 20px 16px 18px; display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 10px; }
+.track { position: relative; height: 24px; }
+.track::before { content: ""; position: absolute; left: 0; right: 0; top: 50%; border-top: 2px dashed var(--board-line); }
+.track .done { position: absolute; left: 0; top: 50%; width: 46%; border-top: 2px solid var(--sign); }
+.track .plane { position: absolute; top: 0; left: calc(46% - 12px); width: 24px; height: 24px; color: var(--sign); animation: fly 6s ease-in-out infinite alternate; }
+@keyframes fly { from { transform: translateX(-6px); } to { transform: translateX(6px); } }
+.fids { list-style: none; margin: 0; padding: 0 16px 8px; }
+.fids li { display: grid; grid-template-columns: 92px 1fr auto; gap: 10px; align-items: center; padding: 12px 0; border-top: 1px solid var(--board-line);
+  font: 500 17px/1.2 var(--f-text); }
+.fids .st { font: 700 14px/1 var(--f-cond); letter-spacing: .1em; text-transform: uppercase; }
+.fids .done .st { color: var(--board-dim); }
+.fids .done { color: var(--board-dim); }
+.fids .now .st { color: var(--sign); }
+.fids .now { color: var(--board-ink); font-weight: 600; }
+.fids .next { color: var(--board-dim); }
+.fids .time { font: 600 16px/1 var(--f-cond); color: var(--board-dim); }
+.dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; background: var(--sign); margin-right: 6px; vertical-align: 1px; animation: blink 1.2s steps(2, start) infinite; }
+@keyframes blink { to { visibility: hidden; } }
+.eta { margin: 22px 0 6px; }
+.eta .bar { height: 10px; background: var(--surface-2); border-radius: 999px; overflow: hidden; border: 1px solid var(--line); }
+.eta .bar div { height: 100%; width: 46%; background: var(--ink); border-radius: 999px; }
+.eta .lbl { display: flex; justify-content: space-between; margin-top: 8px; font-size: 14px; color: var(--ink-2); }
+.eta .lbl b { font: 700 20px/1 var(--f-cond); color: var(--ink); }
+
+/* ---------- Resultados ---------- */
+.rhead { margin: 4px 0 14px; }
+.rhead .iata { font: 700 32px/1 var(--f-cond); letter-spacing: .02em; }
+.rhead .iata .arr { color: var(--muted); font-weight: 500; padding: 0 2px; }
+.rhead .sub { font-size: 14px; color: var(--ink-2); margin-top: 4px; }
+.signal { padding: 12px 14px 12px; margin-bottom: 14px; }
+.signal .q { font: 600 12px/1 var(--f-cond); letter-spacing: .14em; text-transform: uppercase; color: var(--board-dim); margin-bottom: 8px; }
+.signal .row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.pips { display: inline-flex; gap: 3px; }
+.pips span { width: 8px; height: 18px; border-radius: 2px; border: 1.5px solid var(--board-dim); }
+.pips span.on { background: var(--sign); border-color: var(--sign); }
+.signal .why { margin: 10px 0 0; font-size: 14px; line-height: 1.3; color: var(--board-dim); display: flex; align-items: center; gap: 10px; }
+.signal .pips { flex: none; }
+.signal .pips span { width: 7px; height: 14px; }
+.signal .why b { color: var(--board-ink); font-weight: 600; }
+
+.best { margin-top: 26px; }
+.tag { position: absolute; top: -13px; left: 14px; background: var(--sign); color: var(--on-sign); font: 700 13px/1 var(--f-cond);
+  letter-spacing: .12em; text-transform: uppercase; padding: 7px 10px 6px; border-radius: 6px; }
+.best .airline { display: flex; justify-content: space-between; align-items: baseline; padding: 22px 16px 4px; }
+.best .airline b { font: 700 22px/1 var(--f-cond); letter-spacing: .03em; }
+.best .airline span { font-size: 13px; color: var(--ink-2); }
+.leg { padding: 10px 16px 12px; }
+.leg + .leg { border-top: 1px solid var(--line); }
+.leg .top { display: flex; justify-content: space-between; align-items: baseline; }
+.leg .top .dur { font: 600 15px/1 var(--f-cond); color: var(--ink-2); }
+.leg .line { display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: center; margin-top: 6px; }
+.leg .t { font: 700 28px/1 var(--f-cond); }
+.leg .t sup { font-size: 13px; color: var(--muted); font-weight: 600; margin-left: 1px; }
+.leg .t small { display: block; font: 600 13px/1.2 var(--f-cond); letter-spacing: .08em; color: var(--muted); margin-top: 3px; }
+.leg .t.r { text-align: right; }
+.stops { position: relative; height: 30px; }
+.stops::before { content: ""; position: absolute; left: 0; right: 0; top: 9px; border-top: 2px solid var(--ink); }
+.stops .s { position: absolute; left: 50%; top: 3px; transform: translateX(-50%); width: 14px; height: 14px; border-radius: 50%; background: var(--surface); border: 2px solid var(--ink); }
+.stops .lab { position: absolute; left: 0; right: 0; top: 19px; text-align: center; font: 600 12px/1 var(--f-cond); letter-spacing: .06em; color: var(--ink-2); }
+.stub { padding: 16px 16px 16px; }
+.stub .pr { display: flex; justify-content: space-between; align-items: flex-end; gap: 10px; }
+.stub .price { font: 700 60px/.9 var(--f-cond); letter-spacing: -.01em; }
+.stub .price .cur { font-size: 34px; margin-left: 4px; }
+.chk { display: inline-flex; align-items: center; gap: 5px; font: 600 13px/1 var(--f-text); color: var(--go); background: var(--go-bg); padding: 6px 9px; border-radius: 999px; white-space: nowrap; }
+.stub .what { font-size: 14px; color: var(--ink-2); margin: 8px 0 2px; }
+.save { font-size: 14px; color: var(--ink); margin: 0 0 14px; }
+.save b { font-family: var(--f-cond); font-size: 17px; }
+
+.alts { list-style: none; margin: 10px 0 0; padding: 0; }
+.alt { display: grid; grid-template-columns: 1fr auto; gap: 2px 10px; padding: 12px 2px; border-bottom: 1px solid var(--line); }
+.alt b { font-weight: 600; }
+.alt .sub { font-size: 13px; color: var(--ink-2); display: flex; align-items: center; gap: 6px; }
+.alt .p { grid-row: 1 / span 2; grid-column: 2; text-align: right; font: 700 24px/1 var(--f-cond); }
+.alt .p small { display: block; font: 600 13px/1.3 var(--f-cond); color: var(--muted); letter-spacing: .02em; }
+.mini { display: inline-block; width: 26px; height: 8px; position: relative; flex: none; }
+.mini::before { content: ""; position: absolute; left: 0; right: 0; top: 3px; border-top: 2px solid var(--ink-2); }
+.mini.one::after { content: ""; position: absolute; left: 9px; top: 0; width: 8px; height: 8px; border-radius: 50%; background: var(--surface); border: 2px solid var(--ink-2); box-sizing: border-box; background: var(--bg); }
+.more { display: block; margin: 10px 0 0; font-size: 15px; font-weight: 600; color: var(--link); text-decoration: none; }
+
+.sec { margin-top: 30px; padding-top: 18px; border-top: 2px solid var(--ink); }
+.sec h2 { font: 700 26px/1 var(--f-cond); margin: 0; letter-spacing: .01em; }
+.sec .line1 { color: var(--ink-2); font-size: 14px; margin: 6px 0 12px; }
+.seg { display: inline-flex; border: 1.5px solid var(--ink); border-radius: 10px; overflow: hidden; }
+.seg span { font: 600 15px/1 var(--f-text); padding: 9px 16px; }
+.seg span.on { background: var(--ink); color: var(--bg); }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 12px; font-size: 13px; color: var(--ink-2); margin: 12px 0 10px; }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.sw { width: 18px; height: 14px; border-radius: 3px; display: inline-block; }
+.sw.cheap { background: var(--go-bg); box-shadow: inset 0 -3px 0 var(--go); }
+.sw.mid { background: var(--surface); border: 1px solid var(--line-strong); }
+.sw.dear { background: repeating-linear-gradient(135deg, var(--stop-bg) 0 3px, var(--surface) 3px 6px); border: 1px solid var(--stop-bg); }
+.sw.sel { border: 2px solid var(--ink); background: transparent; }
+.month { font: 600 14px/1 var(--f-cond); letter-spacing: .1em; text-transform: uppercase; color: var(--ink-2); margin: 6px 0 8px; }
+.cal { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+.wd { text-align: center; font: 600 12px/1 var(--f-cond); letter-spacing: .06em; color: var(--muted); padding-bottom: 4px; text-transform: uppercase; }
+.cell { position: relative; height: 52px; border-radius: 8px; display: flex; flex-direction: column; justify-content: space-between; padding: 5px 6px 6px; border: 1px solid var(--line); background: var(--surface); }
+.cell .d { font: 500 12px/1 var(--f-text); color: var(--muted); }
+.cell b { font: 700 19px/1 var(--f-cond); text-align: right; }
+.cell.cheap { background: var(--go-bg); border-color: transparent; box-shadow: inset 0 -3px 0 var(--go); }
+.cell.cheap b { color: var(--go-ink); }
+.cell.cheap .d { color: var(--go-ink); }
+.cell.dear { background: repeating-linear-gradient(135deg, var(--stop-bg) 0 4px, var(--surface) 4px 8px); border-color: var(--stop-bg); }
+.cell.dear b { color: var(--stop-ink); }
+.cell.out { background: transparent; border: 1px dashed var(--line); }
+.cell.out .d { opacity: .6; }
+.cell.sel { outline: 2.5px solid var(--ink); outline-offset: 1px; }
+.cell .low, .sw.low { position: absolute; top: 4px; right: 4px; width: 16px; height: 16px; border-radius: 50%; background: var(--sign); color: var(--on-sign); font: 700 11px/16px var(--f-text); text-align: center; }
+.sw.low { position: static; display: inline-block; }
+.foot { margin-top: 12px; font-size: 13px; color: var(--muted); }
+
+/* ---------- Sistema (tokens e componentes) ---------- */
+.system { margin-top: 48px; display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+.box { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 16px 18px; }
+.box h3 { font: 700 20px/1 var(--f-cond); letter-spacing: .02em; margin: 0 0 12px; }
+.swatches { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.swatch { font-size: 12px; color: var(--ink-2); }
+.swatch i { display: block; height: 40px; border-radius: 8px; border: 1px solid var(--line); margin-bottom: 4px; }
+.spec p { margin: 0 0 8px; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { display: inline-flex; align-items: center; gap: 6px; min-height: 36px; padding: 0 14px; border-radius: 999px; border: 1.5px solid var(--line-strong); font: 500 15px/1 var(--f-text); color: var(--ink); background: var(--surface); }
+.chip.on { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.states { display: grid; gap: 8px; }
+.state { display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; }
+.state small { color: var(--board-dim); font-size: 13px; }
+.conf { display: inline-flex; gap: 2px; align-items: flex-end; margin-left: 8px; }
+.conf span { width: 5px; background: var(--board-dim); border-radius: 1px; }
+.conf span.on { background: var(--board-ink); }
+.marks { display: grid; gap: 6px; font-size: 15px; }
+.marks div { display: flex; justify-content: space-between; border-bottom: 1px solid var(--line); padding-bottom: 6px; }
+.marks b { font: 700 18px/1 var(--f-cond); }
+.up { color: var(--stop); } .down { color: var(--go); }
+.note-small { font-size: 12px; color: var(--muted); margin: 10px 0 0; }
+
+@media (prefers-reduced-motion: reduce) { .track .plane, .dot { animation: none; } }
+</style>
+</head>
+<body>
+<div class="sheet">
+
+  <div class="sheet-head">
+    <div>
+      <h1>Cartão de embarque + painel de partidas</h1>
+      <p>Esboço de interface · 20/10/2026 · dados reais da busca BCN ⇄ SAO de 20/10, 20:49</p>
+    </div>
+    <label class="toggle"><input type="checkbox" id="inv"> Ver no tema oposto</label>
+  </div>
+
+  <div class="phones">
+
+    <!-- =================== 1. HOME =================== -->
+    <div class="col">
+      <p class="cap">1 · Home com busca</p>
+      <div class="phone" role="region" aria-label="Home com busca">
+        <div class="scr">
+          <div class="appbar">
+            <a class="brand" href="#"><svg width="26" height="18" viewBox="0 0 26 18" aria-hidden="true"><path d="M3 0h20a3 3 0 0 1 3 3v3.5a2.5 2.5 0 0 0 0 5V15a3 3 0 0 1-3 3H3a3 3 0 0 1-3-3v-3.5a2.5 2.5 0 0 0 0-5V3a3 3 0 0 1 3-3z" fill="var(--sign)"/><path d="M17 3v12" stroke="var(--on-sign)" stroke-width="1.5" stroke-dasharray="2 2"/></svg>Passagens</a>
+            <a class="quiet" href="#">Como funciona</a>
+          </div>
+
+          <h2 class="hero">Compro agora<br>ou espero?</h2>
+          <p class="lead">O preço final de ida e volta, nas semanas que você escolher.</p>
+
+          <form class="pass" onsubmit="return false">
+            <div class="route-pick">
+              <div class="ap"><span class="eyebrow">De</span><b class="iata">BCN</b><span class="city">Barcelona</span></div>
+              <button class="swap" type="button" aria-label="Inverter origem e destino">⇄</button>
+              <div class="ap r"><span class="eyebrow">Para</span><b class="iata">SAO</b><span class="city">São Paulo</span></div>
+            </div>
+            <div class="perf" aria-hidden="true"></div>
+            <div class="fields">
+              <div class="fld wide"><div><span class="eyebrow">Ida entre</span><span class="val num">10 nov<span class="to">—</span>24 nov</span></div><span class="aux">15 datas</span></div>
+              <div class="fld wide"><div><span class="eyebrow">Volta entre</span><span class="val num">08 dez<span class="to">—</span>22 dez</span></div><span class="aux">15 datas</span></div>
+              <div class="fld"><span class="eyebrow">Adultos</span><span class="val">1</span></div>
+              <div class="fld"><span class="eyebrow">Convite</span><span class="val"><span class="ok">✓ salvo</span></span></div>
+            </div>
+            <div class="act">
+              <button class="btn primary" type="submit">Buscar preços <span aria-hidden="true">→</span></button>
+              <p class="hint">30 de 40 datas · leva ≈ 7 min</p>
+            </div>
+          </form>
+
+          <div class="list-h"><span class="eyebrow">Suas rotas</span></div>
+          <ul class="routes">
+            <li><a class="rrow" href="#">
+              <span class="iata">BCN ⇄ SAO</span>
+              <span class="price num">714 €<small>ida e volta ✓</small></span>
+              <span class="sub">16 nov → 09 dez · ITA · conferido hoje 20:42</span>
+            </a></li>
+            <li><a class="rrow" href="#">
+              <span class="iata">BCN ⇄ SAO</span>
+              <span class="price num">409 €<small>só a ida, desde</small></span>
+              <span class="sub">acompanhada todo dia · ida nov–dez</span>
+            </a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- =================== 2. BUSCANDO =================== -->
+    <div class="col">
+      <p class="cap">2 · Buscando…</p>
+      <div class="phone" role="region" aria-label="Buscando">
+        <div class="scr">
+          <div class="appbar">
+            <a class="brand" href="#"><svg width="26" height="18" viewBox="0 0 26 18" aria-hidden="true"><path d="M3 0h20a3 3 0 0 1 3 3v3.5a2.5 2.5 0 0 0 0 5V15a3 3 0 0 1-3 3H3a3 3 0 0 1-3-3v-3.5a2.5 2.5 0 0 0 0-5V3a3 3 0 0 1 3-3z" fill="var(--sign)"/><path d="M17 3v12" stroke="var(--on-sign)" stroke-width="1.5" stroke-dasharray="2 2"/></svg>Passagens</a>
+          </div>
+
+          <h2 class="hero" style="font-size:40px;margin-top:16px">Buscando<br>30 datas</h2>
+          <p class="lead">Ida 10–24 nov · volta 08–22 dez · 1 adulto</p>
+
+          <div class="board" role="status" aria-live="polite">
+            <div class="trip" aria-label="Barcelona para São Paulo">
+              <span class="flaps big white" aria-hidden="true"><i>B</i><i>C</i><i>N</i></span>
+              <div class="track" aria-hidden="true">
+                <span class="done"></span>
+                <svg class="plane" viewBox="0 0 24 24"><path fill="currentColor" transform="rotate(90 12 12)" d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/></svg>
+              </div>
+              <span class="flaps big white" aria-hidden="true"><i>S</i><i>A</i><i>O</i></span>
+            </div>
+            <ol class="fids">
+              <li class="done"><span class="st">✓ Feito</span><span>Pedido recebido</span><span class="time">20:34</span></li>
+              <li class="now"><span class="st"><span class="dot" aria-hidden="true"></span>Agora</span><span>Consultando cada data</span><span class="time"></span></li>
+              <li class="next"><span class="st">○ Depois</span><span>Montando o resultado</span><span class="time"></span></li>
+            </ol>
+          </div>
+
+          <div class="eta">
+            <div class="bar" role="progressbar" aria-valuenow="46" aria-valuemin="0" aria-valuemax="100" aria-label="Progresso estimado"><div></div></div>
+            <div class="lbl"><span>tempo estimado</span><span><b class="num">≈ 4 min</b> restantes</span></div>
+          </div>
+
+          <p class="lead" style="margin-top:18px">Pode fechar. O link guarda a busca.</p>
+          <button class="btn ghost" type="button">Copiar link</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- =================== 3. RESULTADOS (topo) =================== -->
+    <div class="col">
+      <p class="cap">3 · Resultados (topo)</p>
+      <div class="phone" role="region" aria-label="Resultados">
+        <div class="scr">
+          <div class="appbar">
+            <a class="quiet" href="#" style="color:var(--link);text-decoration:none;font-weight:600">← Nova busca</a>
+            <span class="eyebrow">atualizado hoje 20:49</span>
+          </div>
+
+          <div class="rhead">
+            <div class="iata">BCN <span class="arr">⇄</span> SAO</div>
+            <div class="sub">Ida 10–24 nov · volta 08–22 dez · 1 adulto</div>
+          </div>
+
+          <!-- Sinal: compro agora ou espero? -->
+          <section class="board signal" aria-label="Compro agora ou espero?">
+            <div class="q">Compro agora ou espero?</div>
+            <span class="flaps" aria-label="Aprendendo"><i>A</i><i>P</i><i>R</i><i>E</i><i>N</i><i>D</i><i>E</i><i>N</i><i>D</i><i>O</i></span>
+            <p class="why"><span class="pips" role="img" aria-label="1 de 7 dias de histórico"><span class="on"></span><span></span><span></span><span></span><span></span><span></span><span></span></span>
+              <span><b>1 de 7 dias</b> de histórico. Sinal a partir de seg 26/10.</span></p>
+          </section>
+
+          <!-- Melhor compra: cartão de embarque -->
+          <article class="pass best" aria-label="Melhor compra hoje">
+            <span class="tag">★ Melhor compra hoje</span>
+            <div class="airline"><b>ITA</b><span>1 escala em Roma, nos 2 trechos</span></div>
+
+            <div class="leg">
+              <div class="top"><span class="eyebrow">Ida · seg 16 nov</span><span class="dur num">16h20</span></div>
+              <div class="line">
+                <div class="t num">06:20<small>BCN</small></div>
+                <div class="stops" role="img" aria-label="1 escala em FCO, 2h30"><span class="s"></span><span class="lab">FCO · 2h30</span></div>
+                <div class="t r num">18:40<small>GRU</small></div>
+              </div>
+            </div>
+            <div class="leg">
+              <div class="top"><span class="eyebrow">Volta · qua 09 dez</span><span class="dur num">15h15</span></div>
+              <div class="line">
+                <div class="t num">20:40<small>GRU</small></div>
+                <div class="stops" role="img" aria-label="1 escala em FCO, 2h05"><span class="s"></span><span class="lab">FCO · 2h05</span></div>
+                <div class="t r num">15:55<sup>+1</sup><small>BCN</small></div>
+              </div>
+            </div>
+
+            <div class="perf" aria-hidden="true"></div>
+            <div class="stub">
+              <div class="pr">
+                <span class="price num">714<span class="cur">€</span></span>
+                <span class="chk">✓ conferido 20:42</span>
+              </div>
+              <p class="what">Ida e volta juntas · 1 adulto · preço final</p>
+              <p class="save"><b class="num">68 €</b> a menos que comprar separado (782 €)</p>
+              <a class="btn ink" href="#">Ver no Google Flights <span aria-hidden="true">↗</span></a>
+            </div>
+          </article>
+
+          <ul class="alts" aria-label="Outras opções">
+            <li class="alt">
+              <b>Royal Air Maroc</b>
+              <span class="p num">790 €<small>+76 €</small></span>
+              <span class="sub"><span class="mini one" aria-hidden="true"></span>1 escala · ter 24 nov → qua 09 dez</span>
+            </li>
+            <li class="alt">
+              <b>LATAM</b>
+              <span class="p num">937 €<small>+223 €</small></span>
+              <span class="sub"><span class="mini" aria-hidden="true"></span>direto · qua 11 nov → qui 10 dez</span>
+            </li>
+          </ul>
+          <a class="more" href="#">Ver as 10 melhores combinações</a>
+
+          <!-- Quando voar: calendário -->
+          <section class="sec" aria-label="Quando voar">
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <h2>Quando voar</h2>
+              <div class="seg" role="tablist"><span class="on" role="tab" aria-selected="true">Ida</span><span role="tab" aria-selected="false">Volta</span></div>
+            </div>
+            <p class="line1">Menor preço por dia, só ida. Toque num dia.</p>
+            <div class="legend">
+              <span><i class="sw cheap"></i>até 450 €</span>
+              <span><i class="sw mid"></i>médio</span>
+              <span><i class="sw dear"></i>530 € ou mais</span>
+              <span><i class="sw sel"></i>sua melhor compra</span>
+              <span><i class="sw low" aria-hidden="true">★</i>menor preço</span>
+            </div>
+            <div class="month">Novembro 2026</div>
+            <div class="cal" role="grid" aria-label="Novembro 2026, preço da ida por dia">
+              <span class="wd">seg</span><span class="wd">ter</span><span class="wd">qua</span><span class="wd">qui</span><span class="wd">sex</span><span class="wd">sáb</span><span class="wd">dom</span>
+              <div class="cell out"><span class="d">9</span></div>
+              <div class="cell dear" aria-label="10 nov, 545 euros, caro"><span class="d">10</span><b>545</b></div>
+              <div class="cell"><span class="d">11</span><b>489</b></div>
+              <div class="cell"><span class="d">12</span><b>489</b></div>
+              <div class="cell"><span class="d">13</span><b>489</b></div>
+              <div class="cell"><span class="d">14</span><b>489</b></div>
+              <div class="cell"><span class="d">15</span><b>489</b></div>
+
+              <div class="cell cheap sel" aria-label="16 nov, 433 euros, barato, sua melhor compra"><span class="d">16</span><b>433</b></div>
+              <div class="cell"><span class="d">17</span><b>489</b></div>
+              <div class="cell cheap"><span class="d">18</span><b>417</b></div>
+              <div class="cell cheap"><span class="d">19</span><b>433</b></div>
+              <div class="cell"><span class="d">20</span><b>489</b></div>
+              <div class="cell cheap"><span class="d">21</span><b>433</b></div>
+              <div class="cell dear" aria-label="22 nov, 545 euros, caro"><span class="d">22</span><b>545</b></div>
+
+              <div class="cell cheap" aria-label="23 nov, 409 euros, menor preço"><span class="low" aria-hidden="true">★</span><span class="d">23</span><b>409</b></div>
+              <div class="cell cheap" aria-label="24 nov, 409 euros, menor preço"><span class="low" aria-hidden="true">★</span><span class="d">24</span><b>409</b></div>
+              <div class="cell out"><span class="d">25</span></div>
+              <div class="cell out"><span class="d">26</span></div>
+              <div class="cell out"><span class="d">27</span></div>
+              <div class="cell out"><span class="d">28</span></div>
+              <div class="cell out"><span class="d">29</span></div>
+            </div>
+            <p class="foot">Preços em euros, 1 adulto, só ida · Google Flights, 20/10 20:49</p>
+          </section>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- =================== SISTEMA =================== -->
+  <div class="system">
+    <div class="box">
+      <h3>Cores (tema atual)</h3>
+      <div class="swatches">
+        <div class="swatch"><i style="background:var(--bg)"></i>fundo</div>
+        <div class="swatch"><i style="background:var(--surface)"></i>cartão</div>
+        <div class="swatch"><i style="background:var(--ink)"></i>tinta</div>
+        <div class="swatch"><i style="background:var(--sign)"></i>sinal</div>
+        <div class="swatch"><i style="background:var(--board)"></i>painel</div>
+        <div class="swatch"><i style="background:var(--go)"></i>barato / ok</div>
+        <div class="swatch"><i style="background:var(--stop)"></i>caro / subiu</div>
+        <div class="swatch"><i style="background:var(--link)"></i>link</div>
+      </div>
+      <p class="note-small">Amarelo = "a resposta". No máximo um destaque amarelo por área da tela.</p>
+    </div>
+
+    <div class="box spec">
+      <h3>Tipografia</h3>
+      <p style="font:700 60px/.9 var(--f-cond)" class="num">714 €</p>
+      <p class="eyebrow">Barlow Condensed 700 · preços, códigos, horários</p>
+      <p style="font:600 22px/1.2 var(--f-cond)">BCN 06:20 → GRU 18:40</p>
+      <p style="font:400 16px/1.45 var(--f-text)">Barlow 400 · texto corrido, 16 px, sempre com números alinhados.</p>
+      <p class="eyebrow">Etiqueta · Barlow Condensed 600 · 12 px · maiúsculas</p>
+    </div>
+
+    <div class="box">
+      <h3>Sinal: os 3 estados</h3>
+      <div class="states">
+        <div class="board state"><span class="flaps"><i>C</i><i>O</i><i>M</i><i>P</i><i>R</i><i>E</i></span><small>✓ forma: check · confiança <span class="conf" aria-label="confiança alta"><span class="on" style="height:6px"></span><span class="on" style="height:10px"></span><span class="on" style="height:14px"></span></span></small></div>
+        <div class="board state"><span class="flaps white"><i>E</i><i>S</i><i>P</i><i>E</i><i>R</i><i>E</i></span><small>⏸ forma: pausa · confiança <span class="conf" aria-label="confiança média"><span class="on" style="height:6px"></span><span class="on" style="height:10px"></span><span style="height:14px"></span></span></small></div>
+        <div class="board state"><span class="flaps white" style="opacity:.7"><i>A</i><i>P</i><i>R</i><i>E</i><i>N</i><i>D</i><i>.</i></span><small>▮▯▯ dias de histórico</small></div>
+      </div>
+      <p class="note-small">Ilustração dos estados, sem dados. "Compre" e "Espere" só aparecem com 7+ dias de coleta.</p>
+    </div>
+
+    <div class="box">
+      <h3>Chips e marcas de preço</h3>
+      <div class="chips" style="margin-bottom:14px">
+        <span class="chip on">Máx. 1 escala ✕</span>
+        <span class="chip">Até 16h por voo</span>
+        <span class="chip">Sai depois das 08:00</span>
+      </div>
+      <div class="marks">
+        <div><span>✓ conferido (preço visto na fonte)</span><b class="num">714 €</b></div>
+        <div><span>≈ estimado (método explicado)</span><b class="num">≈ 714 €</b></div>
+        <div><span class="up">▲ subiu desde ontem</span><b class="num up">+X €</b></div>
+        <div><span class="down">▼ caiu desde ontem</span><b class="num down">−X €</b></div>
+      </div>
+      <p class="note-small">"X" = valor da coleta. Seta + sinal + cor: nunca só a cor.</p>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

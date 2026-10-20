@@ -23,7 +23,7 @@ Você vai precisar de uma conta gratuita no GitHub. São uns 15 minutos.
 ### 1. Criar o repositório
 1. Entre em https://github.com e faça login (ou crie a conta).
 2. Clique no **+** no canto superior direito → **New repository**.
-3. Em *Repository name*, escreva `voos-bcn-sp`.
+3. Em *Repository name*, escreva `flight-and-ticket`.
 4. Marque **Public**. No plano gratuito, o GitHub Pages só funciona com repositório público.
    O repositório guarda apenas preços de voos, sem dados pessoais.
 5. **Não** marque "Add a README" nem nenhuma outra opção. Clique em **Create repository**.
@@ -32,11 +32,11 @@ Você vai precisar de uma conta gratuita no GitHub. São uns 15 minutos.
 Opção mais simples, pelo aplicativo **GitHub Desktop** (https://desktop.github.com):
 1. Instale o aplicativo e faça login com a sua conta.
 2. **File → Add local repository…** → escolha a pasta `C:\Users\Usuario\voos-bcn-sp`.
-3. Clique em **Publish repository**. Desmarque "Keep this code private" e confirme o nome `voos-bcn-sp`.
+3. Clique em **Publish repository**. Desmarque "Keep this code private" e confirme o nome `flight-and-ticket`.
 
 Ou pelo terminal, se preferir (troque `SEU-USUARIO` pelo seu usuário do GitHub):
 ```bash
-git -C C:/Users/Usuario/voos-bcn-sp remote add origin https://github.com/SEU-USUARIO/voos-bcn-sp.git
+git -C C:/Users/Usuario/voos-bcn-sp remote add origin https://github.com/SEU-USUARIO/flight-and-ticket.git
 ```
 ```bash
 git -C C:/Users/Usuario/voos-bcn-sp push -u origin main
@@ -50,7 +50,7 @@ git -C C:/Users/Usuario/voos-bcn-sp push -u origin main
 1. Ainda em **Settings**, clique em **Pages** no menu da esquerda.
 2. Em *Build and deployment → Source*, escolha **Deploy from a branch**.
 3. Em *Branch*, escolha **main** e a pasta **/docs**. Clique em **Save**.
-4. Em 1 ou 2 minutos aparece o endereço: `https://SEU-USUARIO.github.io/voos-bcn-sp/`.
+4. Em 1 ou 2 minutos aparece o endereço: `https://SEU-USUARIO.github.io/flight-and-ticket/`.
    Salve esse link nos favoritos do celular.
 
 ### 5. Rodar a primeira coleta agora (sem esperar o dia seguinte)
@@ -70,6 +70,22 @@ Só se um dia for preciso trocar de fonte (veja "Limitações").
 
 ---
 
+## App na Vercel
+
+O site novo (home com busca, tela "buscando…" e resultados) é um app Next.js na raiz do repositório (`app/`, `lib/`).
+- Os resultados são lidos de `data/public/*.json` no GitHub; cada coleta atualiza o site sem republicar.
+- A busca do site dispara o workflow "Busca sob demanda". Durante o beta, ela exige um código de convite.
+
+Configuração (uma vez só, na Vercel):
+1. **Add New → Project →** importe `flight-and-ticket` (Root Directory padrão, `./`).
+2. Em **Settings → Environment Variables**, crie:
+   - `GITHUB_TOKEN`: token *fine-grained* do GitHub, só deste repositório, com **Contents: Read-only** e
+     **Actions: Read and write**. Crie em GitHub → Settings → Developer settings → Fine-grained tokens.
+   - `INVITE_CODE`: o código de convite do beta, escolhido por você.
+3. Cada Pull Request ganha um link de prévia. O branch `main` é o site oficial.
+
+Rodar localmente: `npm install` e `npm run dev`.
+
 ## Busca sob demanda (outras cidades e datas)
 
 Para pesquisar qualquer outra rota sem mexer no acompanhamento diário:
@@ -80,7 +96,7 @@ Para pesquisar qualquer outra rota sem mexer no acompanhamento diário:
    - **volta** igual, ou vazia para só ida;
    - adultos, classe, máximo de escalas, moeda e, se quiser, data-limite de chegada.
 3. Clique em **Run workflow**. Leva ~1 minuto a cada 8 datas (máximo de 150 datas por busca).
-4. O resultado aparece em `https://SEU-USUARIO.github.io/voos-bcn-sp/buscas/`, cada busca com seu próprio
+4. O resultado aparece em `https://SEU-USUARIO.github.io/flight-and-ticket/buscas/`, cada busca com seu próprio
    dashboard. Rodar a mesma busca de novo atualiza a página e acumula histórico.
 
 Os dados ficam em `data/buscas/<rota_datas>/`. A coleta diária continua igual e só usa o `config.yaml`.
