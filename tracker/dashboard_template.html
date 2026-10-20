@@ -93,6 +93,9 @@ input[type=range] { width: 100%; accent-color: var(--accent); }
   display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.15; padding: 4px 0; }
 .cell .dn { font-size: .66rem; opacity: .75; }
 .cell .pr { font-size: .95rem; font-weight: 700; }
+.cell .pr small { font-size: .7rem; font-weight: 600; margin-right: 1px; opacity: .8; }
+.trip { background: var(--surface-2); border-radius: 10px; padding: 8px 10px; margin: 4px 0 6px; font-size: .85rem; color: var(--text-2); }
+.trip b { font-family: "Barlow Condensed", "Arial Narrow", sans-serif; font-size: 1.15rem; color: var(--text); margin-right: 4px; }
 .cell.off { background: transparent; cursor: default; }
 .cell.none { background: var(--empty); color: var(--muted); cursor: default; }
 .cell.sel { outline: 2px solid var(--text); outline-offset: 1px; }
@@ -191,7 +194,7 @@ footer { color: var(--muted); font-size: .75rem; padding: 10px 0 40px; }
 
   <section class="sec" id="s-quando" data-nav="Quando voar">
     <div class="sec-head"><h2>Quando voar</h2><span class="legend">barato <i class="legend-bar"></i> caro</span></div>
-    <p class="sub">Menor preço por dia, só de ida. Toque num dia.</p>
+    <p class="sub" id="cal-sub">Preço total da viagem (ida + volta). ✓ conferido · ≈ estimado. Toque num dia.</p>
     <h3 id="h-cal-ida">Ida</h3>
     <div class="months" id="cal-ida"></div>
     <div class="detail" id="detail-ida" hidden></div>
@@ -522,6 +525,26 @@ function arrow(p) {
   if (Math.abs(p) < 0.02) return `<span class="flat">estável</span>`;
   return p < 0 ? `<span class="down">▼ ${Math.abs(p * 100).toFixed(0)}%</span>` : `<span class="up">▲ ${Math.abs(p * 100).toFixed(0)}%</span>`;
 }
+let TRIP = { ida: new Map(), volta: new Map() };  // data -> combinação mais barata (preço final)
+function bestTrips() {
+  TRIP = { ida: new Map(), volta: new Map() };
+  if (!HAS_RET) return;
+  for (const c of combos()) {
+    for (const [dir, d] of [["ida", c.o.date], ["volta", c.r.date]]) {
+      const cur = TRIP[dir].get(d);
+      if (!cur || c.fp.price < cur.fp.price || (c.fp.price === cur.fp.price && c.fp.kind === "conf")) TRIP[dir].set(d, c);
+    }
+  }
+}
+const kindMark = k => k === "conf" ? "✓" : k === "est" ? "≈" : "";
+function tripLine(dir, date) {
+  const c = TRIP[dir].get(date);
+  if (!c) return "";
+  const outro = dir === "ida" ? `volta ${dm(c.r.date)}` : `ida ${dm(c.o.date)}`;
+  const cia = c.o.al === c.r.al ? esc(c.o.aln || c.o.al) : `${esc(c.o.aln || c.o.al)} + ${esc(c.r.aln || c.r.al)}`;
+  const nota = c.fp.kind === "conf" ? "conferido" : c.fp.kind === "est" ? "estimado pela compra conjunta" : "2 passagens";
+  return `<div class="trip"><b>${kindMark(c.fp.kind)} ${money(c.fp.price)}</b> viagem completa · ${outro} · ${cia} · ${nota}</div>`;
+}
 function dayDetail(dir, date, compact) {
   const opts = G.get(dir + "|" + date) || [];
   const ch = changeOf(dir, date);
@@ -531,13 +554,14 @@ function dayDetail(dir, date, compact) {
   const head = `${dir === "ida" ? "Ida" : "Volta"} · ${dm(date)}` + (ch != null ? ` <span style="font-weight:400;font-size:.8rem">${arrow(ch)} desde a coleta anterior</span>` : "");
   let body = opts.slice(0, 3).map(optHTML).join("");
   if (compact) body = body.replace(/<a [^>]*>Google Flights ↗<\/a>/g, "");
-  return `<h4>${head}</h4>${body}${rtNote}`;
+  return `<h4>${head}</h4>${HAS_RET ? tripLine(dir, date) : ""}${body}${rtNote}`;
 }
 function renderCalendar(dir) {
   const [a, b] = C[dir];
   const start = parseISO(a), end = parseISO(b);
   const vals = [];
-  for (const [k, v] of G) if (k.startsWith(dir + "|")) vals.push(v[0].p);
+  const priceOf = s2 => HAS_RET ? TRIP[dir].get(s2)?.fp.price : G.get(dir + "|" + s2)?.[0].p;
+  for (const [k, v] of G) if (k.startsWith(dir + "|")) { const pr = priceOf(k.slice(dir.length + 1)); if (pr != null) vals.push(pr); }
   const sc = makeScale(vals);
   let html = "", cur = new Date(Date.UTC(start.getUTCFullYear(), start.getUTCMonth(), 1));
   while (cur <= end) {
@@ -551,9 +575,11 @@ function renderCalendar(dir) {
       const dt = new Date(Date.UTC(y, m, d)), s = iso(dt);
       if (dt < start || dt > end) { html += `<div class="cell off"></div>`; continue; }
       const opts = G.get(dir + "|" + s);
-      if (!opts) { html += `<div class="cell none"><span class="dn">${d}</span><span class="pr">—</span></div>`; continue; }
-      html += `<button class="cell${state.sel[dir] === s ? " sel" : ""}" style="background:${sc(opts[0].p)}" data-date="${s}" ` +
-        `aria-label="${dm(s)}: ${money(opts[0].p)}"><span class="dn">${d}</span><span class="pr">${Math.round(opts[0].p)}</span></button>`;
+      const pr = priceOf(s);
+      if (!opts || pr == null) { html += `<div class="cell none"><span class="dn">${d}</span><span class="pr">—</span></div>`; continue; }
+      const mk = HAS_RET ? kindMark(TRIP[dir].get(s).fp.kind) : "";
+      html += `<button class="cell${state.sel[dir] === s ? " sel" : ""}" style="background:${sc(pr)}" data-date="${s}" ` +
+        `aria-label="${dm(s)}: ${money(pr)}"><span class="dn">${d}</span><span class="pr">${mk ? `<small>${mk}</small>` : ""}${Math.round(pr).toLocaleString("pt-BR")}</span></button>`;
     }
     html += `</div></div>`;
     cur = new Date(Date.UTC(y, m + 1, 1));
@@ -761,7 +787,8 @@ function renderVerdict() {
 }
 
 function renderAll() {
-  regroup(); renderCards(); renderVerdict();
+  regroup(); bestTrips(); renderCards(); renderVerdict();
+  if (!HAS_RET) $("#cal-sub").textContent = "Menor preço por dia. Toque num dia.";
   document.querySelectorAll(".legend-bar").forEach(e => e.style.background = `linear-gradient(90deg, ${css("--good")}, ${css("--mid")}, ${css("--bad")})`);
   renderCalendar("ida"); if (HAS_RET) { renderCalendar("volta"); renderMatrix(); }
   renderAir(); renderTop(); renderTrend(); renderSummary();
