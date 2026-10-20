@@ -10,7 +10,7 @@ import json
 import statistics
 import sys
 from collections import defaultdict
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from pathlib import Path
 from types import SimpleNamespace
 from zoneinfo import ZoneInfo
@@ -85,18 +85,33 @@ def dashboard_row(row: dict) -> bool:
     return all(m.startswith("trecho ") for m in row["motivo"].split("; "))
 
 
-def rt_factors(runs: list[dict]) -> dict[str, dict]:
-    """Quanto a ida e volta custa em relação à soma dos trechos, por companhia.
-
-    Usa as combinações conferidas (mesmos voos, mesma companhia nos dois
-    sentidos) dos últimos 7 dias de coleta."""
-    ratios: dict[str, list[float]] = defaultdict(list)
-    for r in runs[-7:]:
-        for row in read_csv(r["dir"] / "roundtrip.csv"):
-            same, soma = row.get("preco_idavolta_mesmos_voos"), row.get("preco_soma_trechos")
-            if same and soma and row["companhias_ida"] == row["companhias_volta"]:
-                ratios[row["companhias_ida"]].append(float(same) / float(soma))
-    return {al: {"f": round(statistics.median(v), 3), "n": len(v)} for al, v in ratios.items()}
+def rt_reference(cfg) -> dict[str, dict]:
+    """Preços de ida e volta já conferidos, por companhia, na mesma rota (coleta diária e todas as
+    buscas dos últimos 7 dias). Servem de referência para estimar a compra conjunta onde ainda não
+    houve conferência: a ida e volta de uma companhia fica numa faixa própria, que não acompanha a
+    soma dos trechos (ex.: LATAM BCN–SAO entre 1.120 e 1.351 € com somas de 1.669 a 1.921 €)."""
+    cutoff = (datetime.now(MADRID).date() - timedelta(days=7)).isoformat()
+    main = config_mod.load()
+    folders = [RUNS] if (cfg.origem, cfg.destino) == (main.origem, main.destino) else []
+    for f in sorted(BUSCAS.iterdir()) if BUSCAS.exists() else []:
+        spec = f / "busca.json"
+        if spec.exists():
+            v = json.loads(spec.read_text(encoding="utf-8"))["viagem"]
+            if (v["origem"], v["destino"]) == (cfg.origem, cfg.destino):
+                folders.append(f)
+    obs: dict[str, list[float]] = defaultdict(list)
+    for base in folders:
+        for run in load_runs(base):
+            if run["dia"] < cutoff:
+                continue
+            for row in read_csv(run["dir"] / "roundtrip.csv"):
+                al = row.get("companhias_ida")
+                if row.get("preco_idavolta_mesmos_voos") and al == row.get("companhias_volta"):
+                    obs[al].append(float(row["preco_idavolta_mesmos_voos"]))
+                if row.get("preco_idavolta_melhor") and al == row.get("companhias_volta_melhor"):
+                    obs[al].append(float(row["preco_idavolta_melhor"]))
+    return {al: {"med": round(statistics.median(v)), "min": round(min(v)), "max": round(max(v)), "n": len(v)}
+            for al, v in obs.items()}
 
 
 def comparator_groups(options: list[dict], cfg) -> list[dict]:
@@ -167,7 +182,7 @@ def build(cfg, base: Path, title: str, links: dict) -> dict:
         },
         "options": options,
         "roundtrips": roundtrips,
-        "rt_factors": rt_factors(ok_runs),
+        "rt_ref": rt_reference(cfg),
         "groups": comparator_groups(options, cfg),
         "errors": [{k: e[k] for k in ("etapa", "direcao", "data", "tentativa", "erro")} for e in errors][-50:],
         "history": {"days": days, "series": dict(series)},

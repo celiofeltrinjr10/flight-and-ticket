@@ -321,8 +321,9 @@ function finalPrice(o, r) {
   const sum = o.p + r.p;
   const c = RT.get(`${o.date}|${o.fl}|${r.date}|${r.fl}`);
   const conf = c ? c.p : null;
-  const f = o.al === r.al ? D.rt_factors[o.al] : null;
-  const est = f && f.f < 1 ? Math.round(sum * f.f) : null;
+  // Estimativa da compra conjunta: mediana dos preços de ida e volta já conferidos desta companhia.
+  const f = o.al === r.al ? D.rt_ref[o.al] : null;
+  const est = f && f.n >= 2 && f.med < sum ? f.med : null;
   let price = sum, kind = "sum";
   if (conf != null) { if (conf <= sum) { price = conf; kind = "conf"; } }
   else if (est != null && est < price) { price = est; kind = "est"; }
@@ -548,9 +549,9 @@ function tripLine(dir, date) {
 function dayDetail(dir, date, compact) {
   const opts = G.get(dir + "|" + date) || [];
   const ch = changeOf(dir, date);
-  const f = opts.length ? D.rt_factors[opts[0].al] : null;
-  const rtNote = !compact && HAS_RET && f && f.f < 1
-    ? `<p class="hint">Comprando ida e volta juntas, ${esc(opts[0].aln || opts[0].al)} costuma sair ~${Math.round((1 - f.f) * 100)}% mais barata.</p>` : "";
+  const f = opts.length ? D.rt_ref[opts[0].al] : null;
+  const rtNote = !compact && HAS_RET && f && f.n >= 2
+    ? `<p class="hint">Ida e volta juntas de ${esc(opts[0].aln || opts[0].al)} já conferida entre ${money(f.min)} e ${money(f.max)} (${f.n} conferências).</p>` : "";
   const head = `${dir === "ida" ? "Ida" : "Volta"} · ${dm(date)}` + (ch != null ? ` <span style="font-weight:400;font-size:.8rem">${arrow(ch)} desde a coleta anterior</span>` : "");
   let body = opts.slice(0, 3).map(optHTML).join("");
   if (compact) body = body.replace(/<a [^>]*>Google Flights ↗<\/a>/g, "");
@@ -665,7 +666,7 @@ function renderMatrix() {
       const { o, r, fp } = c;
       return `<b>${dm(x)} → ${dm(y)}</b><br>${fp.kind === "est" ? "≈ " : ""}<b>${money(fp.price)}</b> · ${kindLabel(fp.kind)}<br>` +
         `ida ${esc(o.aln || o.al)} ${money(o.p)} + volta ${esc(r.aln || r.al)} ${money(r.p)} = ${money(fp.sum)}` +
-        (fp.kind === "est" ? `<br>desconto típico de ida e volta: ${Math.round((1 - fp.f.f) * 100)}% (${fp.f.n} conferência(s))` : "");
+        (fp.kind === "est" ? `<br>estimado: ida e volta desta companhia conferida entre ${money(fp.f.min)} e ${money(fp.f.max)} (${fp.f.n} conferências)` : "");
     } }),
     xAxis: Object.assign(axis(), { type: "category", data: xs.map(dm), splitLine: { show: false }, name: "ida", nameLocation: "middle", nameGap: 36, nameTextStyle: { color: css("--muted") } }),
     yAxis: Object.assign(axis(), { type: "category", data: ys.map(dm), splitLine: { show: false } }),
@@ -755,12 +756,12 @@ function renderSummary() {
         `<td class="num">${money(n(r.preco_idavolta_melhor))}${r.voos_volta_melhor && r.voos_volta_melhor !== r.voos_volta ? ` <span class="flat">(${esc(r.voos_volta_melhor)})</span>` : ""}</td>` +
         `<td>${r.link ? `<a href="${esc(r.link)}" target="_blank" rel="noopener">↗</a>` : ""}</td></tr>`).join("")
     : `<tr><td class="empty">Nenhuma combinação conferida nesta coleta.</td></tr>`;
-  const f = Object.entries(D.rt_factors).filter(([, v]) => v.f < 1).map(([al, v]) => `${al} −${Math.round((1 - v.f) * 100)}%`).join(", ");
+  const f = Object.entries(D.rt_ref).filter(([, v]) => v.n >= 2).map(([al, v]) => `${al} ${money(v.min)}–${money(v.max)}`).join(", ");
   $("#howto").innerHTML = [
     "Os cartões no topo mostram o preço final, comparando as duas formas de compra: ida e volta juntas (quando conferida no Google) ou duas passagens separadas.",
-    "O calendário mostra preços só de ida, bons para achar datas baratas. Com a mesma companhia nos dois sentidos, comprar ida e volta juntas costuma sair mais barato" + (f ? ` (desconto típico observado: ${esc(f)}).` : "."),
+    "O calendário mostra o preço total da viagem que sai (ou volta) em cada dia. Com a mesma companhia nos dois sentidos, comprar ida e volta juntas costuma sair mais barato" + (f ? ` (já conferido: ${esc(f)}).` : "."),
     "Companhias diferentes na ida e na volta só podem ser compradas como duas passagens; cada uma tem suas regras de alteração e cancelamento.",
-    "○ = preço conferido no Google hoje; ≈ = estimativa pelo desconto típico da companhia. Confirme sempre no link antes de comprar.",
+    "✓/○ = preço de ida e volta conferido no Google; ≈ = estimativa: o valor típico de ida e volta já conferido para a mesma companhia nesta rota. Confirme sempre no link antes de comprar.",
     "Cada busca traz as ~8 a 15 opções que o Google mostra primeiro; uma companhia pode faltar em algum dia. Horários são locais.",
   ].map(t => `<li>${t}</li>`).join("");
 }
