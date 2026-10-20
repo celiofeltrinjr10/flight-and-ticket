@@ -204,7 +204,7 @@ footer { color: var(--muted); font-size: .75rem; padding: 10px 0 40px; }
 
   <section class="sec" id="s-datas" data-nav="Comparar datas">
     <h2>Comparar datas</h2>
-    <p class="sub">Preço final de cada ida × volta. ○ conferido · ≈ estimado.</p>
+    <p class="sub">Preço final de cada ida × volta. ★ 3 melhores · ○ conferido · ≈ estimado.</p>
     <div class="scroll"><div id="matrix" class="chart" style="min-width:860px;height:660px"></div></div>
   </section>
 
@@ -321,8 +321,8 @@ function finalPrice(o, r) {
   const f = o.al === r.al ? D.rt_factors[o.al] : null;
   const est = f && f.f < 1 ? Math.round(sum * f.f) : null;
   let price = sum, kind = "sum";
-  if (est != null && est < price) { price = est; kind = "est"; }
-  if (conf != null && conf <= price) { price = conf; kind = "conf"; }
+  if (conf != null) { if (conf <= sum) { price = conf; kind = "conf"; } }
+  else if (est != null && est < price) { price = est; kind = "est"; }
   return { price, kind, sum, conf, est, f, link: c ? c.link : null };
 }
 const kindLabel = k => k === "conf" ? "ida e volta juntas" : k === "est" ? "juntas (estimado)" : "2 passagens";
@@ -611,10 +611,14 @@ const lineChart = (id, xs, lines) => {
 
 function renderMatrix() {
   const xs = datesOf("ida"), ys = datesOf("volta");
-  const best = new Map();
+  const best = new Map(), bestConf = new Map();
   for (const c of combos()) {
     const k = c.o.date + "|" + c.r.date;
+    if (c.fp.kind === "conf" && (!bestConf.has(k) || bestConf.get(k).fp.price > c.fp.price)) bestConf.set(k, c);
     if (!best.has(k) || best.get(k).fp.price > c.fp.price) best.set(k, c);
+  }
+  for (const [k, c] of bestConf) {  // conferido vence estimativa na mesma célula
+    if (best.get(k).fp.kind === "est" || best.get(k).fp.price >= c.fp.price) best.set(k, c);
   }
   const data = [], ring = [], vals = [];
   xs.forEach((x, i) => ys.forEach((y, j) => {
@@ -624,6 +628,7 @@ function renderMatrix() {
     if (c.fp.kind === "conf") ring.push([i, j, c.fp.price]);
   }));
   const s = [...vals].sort((a, b) => a - b), q = p => s.length ? s[Math.round(p * (s.length - 1))] : 0;
+  const top3 = [...data].sort((a, b) => a[2] - b[2]).slice(0, 3);
   const ch = chart("matrix");
   ch.setOption({
     animation: false, textStyle: { fontFamily: "system-ui, sans-serif" },
@@ -641,7 +646,9 @@ function renderMatrix() {
     visualMap: { show: false, min: q(0.05), max: q(0.95), dimension: 2, seriesIndex: 0, inRange: { color: [css("--good"), css("--mid"), css("--bad")] } },
     series: [
       { type: "heatmap", data, itemStyle: { borderColor: css("--bg"), borderWidth: 1 } },
-      { type: "scatter", data: ring, symbolSize: 8, itemStyle: { color: "transparent", borderColor: css("--text"), borderWidth: 1.2 }, z: 3 },
+      { type: "scatter", data: ring, symbolSize: 9, itemStyle: { color: "transparent", borderColor: css("--text"), borderWidth: 1.5 }, z: 3 },
+      { type: "scatter", data: top3, symbolSize: 1, itemStyle: { color: "transparent" }, z: 4,
+        label: { show: true, formatter: "★", position: "inside", color: css("--sinal"), fontSize: 13, textBorderColor: css("--painel"), textBorderWidth: 2 } },
     ],
   }, true);
   ch.resize();
