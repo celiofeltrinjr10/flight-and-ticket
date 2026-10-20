@@ -44,6 +44,7 @@ class Config:
     vagas_por_destaque: int
     max_por_data: int
     max_por_par_de_voos: int
+    somente_mesma_cia: bool
     pausa: tuple[float, float]
     tentativas: int
     espera_base_s: float
@@ -129,6 +130,7 @@ def from_dict(raw: dict) -> Config:
         vagas_por_destaque=int(b["vagas_por_destaque"]),
         max_por_data=int(b["max_por_data"]),
         max_por_par_de_voos=int(b.get("max_por_par_de_voos", 2)),
+        somente_mesma_cia=bool(b.get("somente_mesma_cia", False)),
         pausa=(float(c["pausa_min_s"]), float(c["pausa_max_s"])),
         tentativas=int(c["tentativas"]),
         espera_base_s=float(c["espera_base_s"]),

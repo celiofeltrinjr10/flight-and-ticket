@@ -42,15 +42,42 @@ export async function dispatchSearch(inputs: Record<string, string>): Promise<vo
 }
 
 export type RunState = "fila" | "rodando" | "concluida" | "falhou" | "nao_encontrada";
+export type Etapa = "preparar" | "datas" | "parcial" | "idavolta" | "montar" | null;
 
-/** Situação da execução cujo nome contém o identificador da busca. */
-export async function runState(slug: string, since: string): Promise<RunState> {
-  const url = `${API}/repos/${REPO}/actions/workflows/busca-sob-demanda.yml/runs?per_page=20&created=>=${since}`;
-  const res = await fetch(url, { headers: headers({ Accept: "application/vnd.github+json" }), cache: "no-store" });
-  if (!res.ok) return "nao_encontrada";
-  const body = (await res.json()) as { workflow_runs: { display_title: string; status: string; conclusion: string | null }[] };
+// Nomes dos passos do workflow "Busca sob demanda" → etapa mostrada na tela "buscando".
+const PASSOS: Record<string, Etapa> = {
+  "Preparar": "preparar",
+  "Consultar cada data": "datas",
+  "Publicar preços de cada dia": "parcial",
+  "Conferir ida e volta": "idavolta",
+  "Montar o resultado": "montar",
+};
+
+type Run = { id: number; display_title: string; status: string; conclusion: string | null };
+
+/** Situação da execução cujo nome contém o identificador da busca, e a etapa em andamento. */
+export async function runState(slug: string, since: string): Promise<{ estado: RunState; etapa: Etapa; parcialPronto: boolean }> {
+  const h = { headers: headers({ Accept: "application/vnd.github+json" }), cache: "no-store" as const };
+  const res = await fetch(`${API}/repos/${REPO}/actions/workflows/busca-sob-demanda.yml/runs?per_page=20&created=>=${since}`, h);
+  if (!res.ok) return { estado: "nao_encontrada", etapa: null, parcialPronto: false };
+  const body = (await res.json()) as { workflow_runs: Run[] };
   const run = body.workflow_runs.find((r) => r.display_title.includes(slug));
-  if (!run) return "nao_encontrada";
-  if (run.status === "completed") return run.conclusion === "success" ? "concluida" : "falhou";
-  return run.status === "in_progress" ? "rodando" : "fila";
+  if (!run) return { estado: "nao_encontrada", etapa: null, parcialPronto: false };
+  if (run.status === "completed") {
+    return { estado: run.conclusion === "success" ? "concluida" : "falhou", etapa: null, parcialPronto: run.conclusion === "success" };
+  }
+  if (run.status !== "in_progress") return { estado: "fila", etapa: null, parcialPronto: false };
+  let etapa: Etapa = "preparar";
+  let parcialPronto = false;
+  const jr = await fetch(`${API}/repos/${REPO}/actions/runs/${run.id}/jobs`, h);
+  if (jr.ok) {
+    const jobs = (await jr.json()) as { jobs: { steps?: { name: string; status: string; conclusion: string | null }[] }[] };
+    for (const st of jobs.jobs[0]?.steps || []) {
+      const e = PASSOS[st.name];
+      if (!e) continue;
+      if (st.status === "in_progress") etapa = e;
+      if (e === "parcial" && st.status === "completed" && st.conclusion === "success") parcialPronto = true;
+    }
+  }
+  return { estado: "rodando", etapa, parcialPronto };
 }

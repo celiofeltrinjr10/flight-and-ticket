@@ -26,6 +26,10 @@ class PageError(Exception):
     """A página veio, mas sem os dados esperados."""
 
 
+class NoResults(PageError):
+    """A página carregou, mas o Google não trouxe opções (ex.: ida e volta não vendida junto)."""
+
+
 class Blocked(PageError):
     """O Google pediu verificação (tráfego incomum / CAPTCHA) ou limitou as requisições."""
 

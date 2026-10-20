@@ -70,7 +70,10 @@ def build_raw(main_raw: dict, args) -> tuple[dict, str]:
         raw["filtros"]["max_escalas"] = int(args.max_escalas)
     if not same_route:
         raw["destaques"] = []
-    raw["etapa_b"].update(combinacoes=20, vagas_por_destaque=2 if same_route else 0)
+    # Busca do site: mais rápida. Só confere ida e volta da mesma companhia (as outras o Google não vende
+    # juntas) e com pausas menores, já que são poucas consultas.
+    raw["etapa_b"].update(combinacoes=6, vagas_por_destaque=1 if same_route else 0, somente_mesma_cia=True)
+    raw["coleta"].update(pausa_min_s=2, pausa_max_s=4, espera_base_s=8)
     raw.pop("prova_de_conceito", None)
 
     slug = f"{origem}-{destino}_{ida[0]:%Y%m%d}-{ida[1]:%Y%m%d}"
