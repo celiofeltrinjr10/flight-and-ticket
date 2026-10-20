@@ -119,19 +119,31 @@ O dashboard (`docs/index.html`) é regenerado a partir dessas pastas. As tendên
 de cada dia. Cada dia ocupa uns 200 KB, então a temporada inteira cabe com folga no GitHub.
 
 ## O dashboard
-1. **Cabeçalho**: data e hora da última atualização, fontes, número de buscas e falhas.
-2. **Calendários (ida e volta)**: cada dia colorido do mais barato (verde) ao mais caro (vermelho), com
-   preço e companhia. Passe o mouse ou toque num dia para ver as 3 melhores opções. ● = ida que chega até
-   a data-limite; ▲▼ = subiu ou caiu desde a coleta anterior.
-3. **Matriz ida × volta** com o preço total estimado de cada par de datas (○ = conferido na Etapa B).
-4. **Comparador**: LATAM direto × Royal Air Maroc × melhor outra companhia, por data.
-5. **Top 10** pelo score, que combina preço, duração total e tempo de conexão (pesos no `config.yaml`).
-6. **Ida e volta conferida**: soma dos trechos × preço real de ida e volta.
-7. **Tendência**: evolução do menor preço e as datas que mais subiram ou caíram, desde ontem e desde 7
-   dias atrás.
-8. **Filtros**: companhia, direto ou 1 escala, duração máxima, só idas antes da data-limite.
-9. **Resumo do dia**: dia da semana mais barato, datas que caíram mais de 10%, diferença média entre
-   LATAM e RAM, economia da ida e volta.
+- **Melhor compra hoje** (topo): o menor preço final e o melhor de cada companhia em destaque. O preço final
+  já compara as duas formas de compra: ida e volta juntas (quando conferida no Google) ou duas passagens
+  separadas. Avisa quando há conexão longa (mais de 6h).
+- **Filtros** (botão ⚙): companhia, escalas, duração total, horas máximas por voo (padrão 16h), horário de
+  partida da ida e da volta, preço máximo por trecho, data-limite de chegada e pesos do score. Ficam salvos no
+  seu navegador.
+- **Abas**:
+  - *Calendário*: menor preço só de ida por dia, do verde (barato) ao vermelho (caro). Toque num dia para ver
+    as 3 melhores opções e a variação desde a coleta anterior.
+  - *Comparar datas*: matriz ida × volta com o preço final de cada par. ○ = ida e volta conferida;
+    ≈ = estimada pelo desconto típico da companhia (calculado com as conferências dos últimos 7 dias).
+  - *Companhias*: LATAM direto × Royal Air Maroc × melhor outra, por data.
+  - *Top 10*: melhores combinações pelo score (preço final, duração total e tempo de conexão).
+  - *Tendência*: evolução do menor preço e as datas que mais subiram ou caíram (desde a coleta anterior e
+    desde 7 dias atrás).
+  - *Resumo*: destaques automáticos, tabela de ida e volta conferida e como ler os números.
+
+### Como ler levando em conta a compra de ida e volta
+1. Use o calendário para achar as datas baratas (preços só de ida).
+2. Com a mesma companhia nos dois sentidos, comprar ida e volta juntas costuma sair mais barato (no primeiro
+   dia: Royal Air Maroc −12%, LATAM −22 a −28%). Os cartões do topo e a aba *Comparar datas* já mostram esse
+   preço final.
+3. Companhias diferentes na ida e na volta só podem ser compradas como duas passagens; cada uma tem suas regras
+   de alteração e cancelamento.
+4. Confirme sempre o preço no link antes de comprar.
 
 ## Rodar no seu computador
 Precisa do Python 3.10 ou mais novo (https://www.python.org).

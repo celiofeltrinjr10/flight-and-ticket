@@ -51,7 +51,7 @@ document.getElementById("actions-link").href = owner && m
   ? `https://github.com/${owner}/${m[1]}/actions/workflows/busca-sob-demanda.yml` : "https://github.com";
 const when = iso => iso ? new Date(iso).toLocaleString("pt-BR", { timeZone: "Europe/Madrid", dateStyle: "short", timeStyle: "short" }) : "—";
 document.getElementById("list").innerHTML = L.length ? L.map(e => {
-  const price = e.min != null ? `<span class="price">desde ${Math.round(e.min).toLocaleString("pt-BR")} ${e.moeda === "EUR" ? "€" : esc(e.moeda)}</span>` : "";
+  const price = e.min != null ? `<span class="price">trecho desde ${Math.round(e.min).toLocaleString("pt-BR")} ${e.moeda === "EUR" ? "€" : esc(e.moeda)}</span>` : "";
   const extra = [e.adultos > 1 ? `${e.adultos} adultos` : "", e.classe !== "economy" ? e.classe : ""].filter(Boolean).join(" · ");
   return `<a class="item" href="${esc(e.slug)}/">${price}<b>${esc(e.title)}</b>` +
     `<div class="meta">${e.ok ? `${e.opcoes} opções` : "sem resultados"} · atualizado ${when(e.atualizado)}${extra ? " · " + esc(extra) : ""}</div></a>`;

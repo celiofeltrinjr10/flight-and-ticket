@@ -269,9 +269,8 @@ def render(data: dict, out: Path) -> None:
 
 def search_title(cfg) -> str:
     t = f"{cfg.origem} → {cfg.destino}" + (f" → {cfg.origem}" if cfg.volta else " (só ida)")
-    d = f"ida {_br(cfg.ida[0].isoformat())}–{_br(cfg.ida[1].isoformat())}"
-    if cfg.volta:
-        d += f", volta {_br(cfg.volta[0].isoformat())}–{_br(cfg.volta[1].isoformat())}"
+    rng = lambda r: _br(r[0].isoformat()) + ("" if r[0] == r[1] else f"–{_br(r[1].isoformat())}")
+    d = f"ida {rng(cfg.ida)}" + (f", volta {rng(cfg.volta)}" if cfg.volta else "")
     return f"{t} · {d}"
 
 
