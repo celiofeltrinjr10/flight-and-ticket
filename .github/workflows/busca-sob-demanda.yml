@@ -2,7 +2,7 @@ name: Busca sob demanda
 run-name: "Busca ${{ inputs.origem }}-${{ inputs.destino }} ${{ inputs.slug }}"
 
 # Actions → "Busca sob demanda" → Run workflow → preencha e confirme.
-# O resultado aparece em https://<usuário>.github.io/voos-bcn-sp/buscas/
+# O resultado aparece em https://<usuário>.github.io/flight-and-ticket/buscas/
 
 on:
   workflow_dispatch:

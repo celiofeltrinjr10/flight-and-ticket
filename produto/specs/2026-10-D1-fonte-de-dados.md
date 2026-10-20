@@ -1,6 +1,6 @@
 # D1/D4 — Fonte de dados licenciada e orçamento
 
-> Issue: https://github.com/celiofeltrinjr10/voos-bcn-sp/issues/2 · Pesquisa: 20/10/2026 · Decisão: _pendente (Celio)_
+> Issue: https://github.com/celiofeltrinjr10/flight-and-ticket/issues/2 · Pesquisa: 20/10/2026 · Decisão: _pendente (Celio)_
 > Todas as fontes abaixo foram consultadas em **20/10/2026**. O que não foi encontrado aparece como **não encontrado**.
 
 ## Premissas de volume

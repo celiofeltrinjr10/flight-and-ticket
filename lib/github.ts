@@ -1,10 +1,10 @@
 // Acesso ao repositório no GitHub: leitura dos dados (data/public) e disparo das buscas.
 // Variáveis de ambiente (configuradas na Vercel, nunca no código):
 //   GITHUB_TOKEN  token "fine-grained" só deste repositório: Contents (leitura) e Actions (leitura e escrita)
-//   GITHUB_REPO   ex. "celiofeltrinjr10/voos-bcn-sp"
+//   GITHUB_REPO   ex. "celiofeltrinjr10/flight-and-ticket"
 //   GITHUB_BRANCH ex. "main"
 
-const REPO = process.env.GITHUB_REPO || "celiofeltrinjr10/voos-bcn-sp";
+const REPO = process.env.GITHUB_REPO || "celiofeltrinjr10/flight-and-ticket";
 // Na prévia de um Pull Request a Vercel informa o branch; assim a prévia usa o robô e os dados do próprio PR.
 const BRANCH = process.env.GITHUB_BRANCH || process.env.VERCEL_GIT_COMMIT_REF || "main";
 const API = "https://api.github.com";
