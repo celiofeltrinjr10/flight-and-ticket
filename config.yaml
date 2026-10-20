@@ -1,0 +1,66 @@
+# Rastreador de passagens Barcelona -> São Paulo
+# Tudo que você pode querer mudar está aqui. Datas no formato AAAA-MM-DD.
+
+viagem:
+  origem: BCN
+  # "SAO" é o código de cidade do Google: cobre GRU, VCP e CGH numa só busca.
+  destino: SAO
+  aeroportos_origem: [BCN]
+  aeroportos_destino: [GRU, VCP, CGH]
+  ida:   {inicio: 2026-11-01, fim: 2026-12-23}
+  volta: {inicio: 2027-01-01, fim: 2027-02-15}
+  adultos: 1
+  classe: economy        # economy | premium-economy | business | first
+  moeda: EUR
+  # Idas que chegam a São Paulo até esta data (inclusive) ganham destaque.
+  data_limite_chegada: 2026-12-29
+
+filtros:
+  max_escalas: 1
+  max_horas_por_trecho: 16   # nenhum voo individual pode passar disso
+
+# Companhias com destaque especial no dashboard (todas as outras também entram).
+destaques:
+  - id: latam
+    nome: LATAM direto
+    companhias: [LA]
+    somente_direto: true
+  - id: ram
+    nome: Royal Air Maroc
+    companhias: [AT]
+    via: CMN               # conexão em Casablanca
+
+# Score do "Top 10": 0 a 100, maior é melhor. Pesos relativos (não precisam somar 1).
+score:
+  preco: 0.6
+  duracao_total: 0.25
+  conexao: 0.15
+
+fontes:
+  # Etapa A (trechos só de ida): google_ff | google_browser | serpapi
+  etapa_a: google_ff
+  # Se a etapa A falhar em todas as tentativas, tenta esta fonte (ou deixe vazio).
+  etapa_a_reserva: google_browser
+  # Etapa B (ida e volta real): google_browser | serpapi
+  etapa_b: google_browser
+
+etapa_b:
+  combinacoes: 20
+  # Vagas garantidas para cada companhia em destaque (dentro das 20).
+  vagas_por_destaque: 2
+  # Cada data de ida/volta aparece no máximo N vezes, para variar as combinações.
+  max_por_data: 3
+  # O mesmo par de voos (ex.: AT965+AT214) entra no máximo N vezes, em datas diferentes.
+  max_por_par_de_voos: 2
+
+coleta:
+  pausa_min_s: 4
+  pausa_max_s: 8
+  tentativas: 3
+  espera_base_s: 15        # espera antes da 2a tentativa; cresce x3 a cada nova
+  # Para a etapa se houver tantas falhas seguidas (provável bloqueio).
+  max_falhas_seguidas: 8
+
+prova_de_conceito:
+  ida:   [2026-11-10, 2026-12-01, 2026-12-20]
+  volta: [2027-01-10, 2027-01-25, 2027-02-10]

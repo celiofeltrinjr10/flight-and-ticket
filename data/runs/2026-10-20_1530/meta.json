@@ -1,0 +1,19 @@
+{
+  "run_id": "2026-10-20_1530",
+  "inicio": "2026-10-20T13:30:08+00:00",
+  "fim": "2026-10-20T13:45:51+00:00",
+  "poc": false,
+  "etapas": "AB",
+  "fontes": {
+    "etapa_a": "google_ff",
+    "etapa_a_reserva": "google_browser",
+    "etapa_b": "google_browser"
+  },
+  "buscas": 119,
+  "falhas": 0,
+  "tentativas_com_erro": 1,
+  "itinerarios": 902,
+  "itinerarios_validos": 902,
+  "combinacoes_ida_volta": 20,
+  "erro_fatal": ""
+}

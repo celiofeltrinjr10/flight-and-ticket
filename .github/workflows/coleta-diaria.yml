@@ -1,0 +1,61 @@
+name: Coleta diária
+
+on:
+  schedule:
+    # 06:00 UTC = 07:00 em Madri no horário de inverno (08:00 no de verão).
+    # O GitHub costuma atrasar alguns minutos.
+    - cron: "0 6 * * *"
+  workflow_dispatch: {}   # botão "Run workflow" para rodar na hora
+
+permissions:
+  contents: write
+
+concurrency:
+  group: coleta
+  cancel-in-progress: false
+
+jobs:
+  coleta:
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Instalar dependências
+        run: |
+          pip install -r requirements.txt
+          python -m playwright install --with-deps chromium
+
+      - name: Testes dos filtros
+        run: python -m unittest discover -s tests -t .
+
+      - name: Coletar preços
+        id: coleta
+        continue-on-error: true
+        env:
+          SERPAPI_KEY: ${{ secrets.SERPAPI_KEY }}
+          IGNAV_API_KEY: ${{ secrets.IGNAV_API_KEY }}
+        run: python -m tracker.collect
+
+      - name: Gerar dashboard
+        run: python -m tracker.build_dashboard
+
+      - name: Salvar dados e dashboard no repositório
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/runs docs
+          git commit -m "Coleta $(TZ=Europe/Madrid date +'%Y-%m-%d %H:%M')" || echo "Nada novo para salvar"
+          git pull --rebase
+          git push
+
+      - name: Avisar se a coleta falhou
+        if: steps.coleta.outcome == 'failure'
+        run: |
+          echo "::error::A coleta não trouxe dados. Veja o log do passo 'Coletar preços' e data/runs/*/errors.csv"
+          exit 1
