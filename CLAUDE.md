@@ -35,7 +35,8 @@ Ver `produto/BRIEF.md`. Em resumo: app público que responde "quando voar?", "qu
 - Python 3.12 (`tracker/`), coleta diária e busca sob demanda pelo GitHub Actions, dados em CSV em `data/`,
   páginas estáticas em `docs/` publicadas no GitHub Pages.
 - Testes: `python -m unittest discover -s tests -t .`
-- Dashboard: `python -m tracker.build_dashboard` (template em `tracker/dashboard_template.html`).
+- Dashboard: `python -m tracker.build_dashboard` (template em `tracker/dashboard_template.html`, copiado para `painel.html`).
+- Site (Vercel): Next.js na raiz (`app/`, `lib/`), lê `data/public/*.json` do GitHub. `npm run build` para testar.
 
 ## Estilo
 Português do Brasil, linguagem direta. Celio não é programador: explicar mudanças em linguagem simples.

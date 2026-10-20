@@ -70,21 +70,21 @@ Só se um dia for preciso trocar de fonte (veja "Limitações").
 
 ---
 
-## App na Vercel (pasta `web/`)
+## App na Vercel
 
-O site novo (home com busca, tela "buscando…" e resultados) é um app Next.js na pasta `web/`.
+O site novo (home com busca, tela "buscando…" e resultados) é um app Next.js na raiz do repositório (`app/`, `lib/`).
 - Os resultados são lidos de `data/public/*.json` no GitHub; cada coleta atualiza o site sem republicar.
 - A busca do site dispara o workflow "Busca sob demanda". Durante o beta, ela exige um código de convite.
 
 Configuração (uma vez só, na Vercel):
-1. **Add New → Project →** importe `voos-bcn-sp` e em **Root Directory** escolha `web`.
+1. **Add New → Project →** importe `voos-bcn-sp` (Root Directory padrão, `./`).
 2. Em **Settings → Environment Variables**, crie:
    - `GITHUB_TOKEN`: token *fine-grained* do GitHub, só deste repositório, com **Contents: Read-only** e
      **Actions: Read and write**. Crie em GitHub → Settings → Developer settings → Fine-grained tokens.
    - `INVITE_CODE`: o código de convite do beta, escolhido por você.
 3. Cada Pull Request ganha um link de prévia. O branch `main` é o site oficial.
 
-Rodar localmente: `cd web`, `npm install`, `npm run dev`.
+Rodar localmente: `npm install` e `npm run dev`.
 
 ## Busca sob demanda (outras cidades e datas)
 

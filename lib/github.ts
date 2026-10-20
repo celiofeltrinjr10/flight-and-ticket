@@ -16,11 +16,13 @@ function headers(extra: Record<string, string> = {}): HeadersInit {
 
 /** Lê um JSON de data/public/ no repositório. `null` se o arquivo não existe. */
 export async function readPublicJson<T>(path: string, revalidate = 60): Promise<T | null> {
-  const url = `${API}/repos/${REPO}/contents/data/public/${path}?ref=${BRANCH}`;
-  const res = await fetch(url, {
-    headers: headers({ Accept: "application/vnd.github.raw+json" }),
-    next: { revalidate },
-  });
+  // Com token: API do GitHub (atualização imediata). Sem token: endereço público (cache de ~5 min).
+  const res = process.env.GITHUB_TOKEN
+    ? await fetch(`${API}/repos/${REPO}/contents/data/public/${path}?ref=${BRANCH}`, {
+        headers: headers({ Accept: "application/vnd.github.raw+json" }),
+        next: { revalidate },
+      })
+    : await fetch(`https://raw.githubusercontent.com/${REPO}/${BRANCH}/data/public/${path}`, { next: { revalidate } });
   if (res.status === 404) return null;
   if (!res.ok) throw new Error(`GitHub respondeu ${res.status} ao ler ${path}`);
   return (await res.json()) as T;

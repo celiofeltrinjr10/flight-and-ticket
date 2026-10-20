@@ -1,0 +1,9 @@
+data/
+docs/
+tracker/
+tests/
+produto/
+.venv/
+.github/
+requirements.txt
+config.yaml
