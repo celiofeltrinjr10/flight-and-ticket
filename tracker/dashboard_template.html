@@ -225,6 +225,7 @@ function passes(o, ignoreAirline) {
   }
   if (state.stops !== "all" && o.st !== Number(state.stops)) return false;
   if (o.tot > state.maxDur * 60) return false;
+  if (o.lg > C.max_horas_trecho * 60) return false;
   if (state.deadline && o.d === "ida" && o.arr.slice(0, 10) > C.deadline) return false;
   return true;
 }

@@ -22,6 +22,7 @@ from datetime import date, datetime, timezone
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
+from . import busca
 from . import config as config_mod
 from .filters import evaluate, fmt_min
 from .gflights import Blocked
@@ -99,7 +100,7 @@ class Runner:
         cfg = self.cfg
         results: list[Itinerary] = []
         consecutive = 0
-        tasks = [(d, day) for d in ("ida", "volta") for day in days[d]]
+        tasks = [(d, day) for d in ("ida", "volta") for day in days.get(d, [])]
         log(f"Etapa A: {len(tasks)} buscas só de ida (fonte {cfg.fonte_a})")
         for i, (direction, day) in enumerate(tasks, 1):
             its = self.call("A", cfg.fonte_a, direction, day,
@@ -260,17 +261,45 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--poc", action="store_true", help="prova de conceito com poucas datas")
     ap.add_argument("--etapa", choices=["A", "AB"], default="AB")
     ap.add_argument("--config", default=None)
+    g = ap.add_argument_group("busca sob demanda (grava em data/buscas/)")
+    g.add_argument("--busca", action="store_true", help="busca avulsa com os parâmetros abaixo")
+    g.add_argument("--origem", help="código IATA de aeroporto ou cidade (ex. BCN, LON, SAO)")
+    g.add_argument("--destino")
+    g.add_argument("--ida", help="AAAA-MM-DD ou AAAA-MM-DD a AAAA-MM-DD")
+    g.add_argument("--volta", default="", help="igual à ida; vazio = só ida")
+    g.add_argument("--adultos", type=int)
+    g.add_argument("--classe")
+    g.add_argument("--max-escalas", type=int)
+    g.add_argument("--moeda")
+    g.add_argument("--data-limite", default="", help="data-limite de chegada da ida (opcional)")
     args = ap.parse_args(argv)
 
-    cfg = config_mod.load(args.config)
     today = datetime.now(MADRID).date()
-    if args.poc:
+    if args.busca:
+        try:
+            raw, slug = busca.build_raw(config_mod.load(args.config).raw, args)
+        except ValueError as e:
+            log(f"ERRO no formulário: {e}")
+            return 2
+        cfg = config_mod.from_dict(raw)
+        base = config_mod.ROOT / "data" / "buscas" / slug
+        base.mkdir(parents=True, exist_ok=True)
+        (base / "busca.json").write_text(json.dumps(raw, ensure_ascii=False, indent=2, default=str),
+                                         encoding="utf-8")
+        days = {d: cfg.dias(d) for d in cfg.direcoes}
+        n = sum(len(v) for v in days.values())
+        if n > busca.MAX_DIAS:
+            log(f"ERRO: {n} datas pedidas; o máximo por busca é {busca.MAX_DIAS}. Encurte os intervalos.")
+            return 2
+    elif args.poc:
+        cfg = config_mod.load(args.config)
         cfg.filtro_no_servidor = False
         days = {"ida": cfg.poc_ida, "volta": cfg.poc_volta}
         cfg.combinacoes, cfg.vagas_por_destaque, cfg.max_por_data = 4, 1, 2
         base = config_mod.ROOT / "data" / "poc"
     else:
-        days = {d: cfg.dias(d) for d in ("ida", "volta")}
+        cfg = config_mod.load(args.config)
+        days = {d: cfg.dias(d) for d in cfg.direcoes}
         base = config_mod.ROOT / "data" / "runs"
     days = {d: [x for x in v if x >= today] for d, v in days.items()}
 
@@ -284,7 +313,7 @@ def main(argv: list[str] | None = None) -> int:
     try:
         its = runner.stage_a(days)
         write_csv(out_dir / "oneway.csv", CSV_FIELDS, [to_row(it, run_id) for it in its])
-        if "B" in args.etapa:
+        if "B" in args.etapa and cfg.volta:
             rt_rows = runner.stage_b(its)
             write_csv(out_dir / "roundtrip.csv", RT_FIELDS, rt_rows)
     except Exception:

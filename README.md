@@ -70,6 +70,21 @@ Só se um dia for preciso trocar de fonte (veja "Limitações").
 
 ---
 
+## Busca sob demanda (outras cidades e datas)
+
+Para pesquisar qualquer outra rota sem mexer no acompanhamento diário:
+1. No GitHub (site ou app do celular), abra **Actions → Busca sob demanda → Run workflow**.
+2. Preencha:
+   - **origem e destino** com 3 letras: aeroporto (`BCN`, `GRU`) ou cidade (`LON`, `PAR`, `MIL`, `NYC`, `SAO`, `RIO`), que cobre todos os aeroportos da cidade;
+   - **ida** como `2026-11-10` ou `2026-11-01 a 2026-11-15`;
+   - **volta** igual, ou vazia para só ida;
+   - adultos, classe, máximo de escalas, moeda e, se quiser, data-limite de chegada.
+3. Clique em **Run workflow**. Leva ~1 minuto a cada 8 datas (máximo de 150 datas por busca).
+4. O resultado aparece em `https://SEU-USUARIO.github.io/voos-bcn-sp/buscas/`, cada busca com seu próprio
+   dashboard. Rodar a mesma busca de novo atualiza a página e acumula histórico.
+
+Os dados ficam em `data/buscas/<rota_datas>/`. A coleta diária continua igual e só usa o `config.yaml`.
+
 ## Como funciona
 
 **Etapa A (99 buscas por dia):** para cada data de ida e de volta, busca passagens só de ida no Google

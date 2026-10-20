@@ -45,9 +45,9 @@ fontes:
   etapa_b: google_browser
 
 etapa_b:
-  combinacoes: 20
+  combinacoes: 60
   # Vagas garantidas para cada companhia em destaque (dentro das 20).
-  vagas_por_destaque: 2
+  vagas_por_destaque: 6
   # Cada data de ida/volta aparece no máximo N vezes, para variar as combinações.
   max_por_data: 3
   # O mesmo par de voos (ex.: AT965+AT214) entra no máximo N vezes, em datas diferentes.

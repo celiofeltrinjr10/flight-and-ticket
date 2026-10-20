@@ -28,11 +28,11 @@ class Config:
     aeroportos_origem: list[str]
     aeroportos_destino: list[str]
     ida: tuple[date, date]
-    volta: tuple[date, date]
+    volta: tuple[date, date] | None  # None = busca só de ida
     adultos: int
     classe: str
     moeda: str
-    data_limite_chegada: date
+    data_limite_chegada: date | None
     max_escalas: int
     max_min_por_trecho: int
     destaques: list[Highlight]
@@ -58,8 +58,17 @@ class Config:
     def max_escalas_servidor(self) -> int | None:
         return self.max_escalas if self.filtro_no_servidor else None
 
+    raw: dict = field(default_factory=dict)  # config original (gravado com cada busca)
+
+    @property
+    def direcoes(self) -> list[str]:
+        return ["ida", "volta"] if self.volta else ["ida"]
+
     def dias(self, direcao: str) -> list[date]:
-        ini, fim = self.ida if direcao == "ida" else self.volta
+        rng = self.ida if direcao == "ida" else self.volta
+        if not rng:
+            return []
+        ini, fim = rng
         return [ini + timedelta(d) for d in range((fim - ini).days + 1)]
 
     def rota(self, direcao: str) -> tuple[str, str]:
@@ -90,7 +99,10 @@ def _d(v) -> date:
 
 
 def load(path: Path | str | None = None) -> Config:
-    raw = yaml.safe_load(Path(path or ROOT / "config.yaml").read_text(encoding="utf-8"))
+    return from_dict(yaml.safe_load(Path(path or ROOT / "config.yaml").read_text(encoding="utf-8")))
+
+
+def from_dict(raw: dict) -> Config:
     v, f, fo, b, c = raw["viagem"], raw["filtros"], raw["fontes"], raw["etapa_b"], raw["coleta"]
     poc = raw.get("prova_de_conceito") or {}
     if v["classe"] not in SEAT_CODES:
@@ -98,14 +110,14 @@ def load(path: Path | str | None = None) -> Config:
     return Config(
         origem=v["origem"],
         destino=v["destino"],
-        aeroportos_origem=v["aeroportos_origem"],
-        aeroportos_destino=v["aeroportos_destino"],
+        aeroportos_origem=v.get("aeroportos_origem") or [],
+        aeroportos_destino=v.get("aeroportos_destino") or [],
         ida=(_d(v["ida"]["inicio"]), _d(v["ida"]["fim"])),
-        volta=(_d(v["volta"]["inicio"]), _d(v["volta"]["fim"])),
+        volta=(_d(v["volta"]["inicio"]), _d(v["volta"]["fim"])) if v.get("volta") else None,
         adultos=int(v["adultos"]),
         classe=v["classe"],
         moeda=v["moeda"],
-        data_limite_chegada=_d(v["data_limite_chegada"]),
+        data_limite_chegada=_d(v["data_limite_chegada"]) if v.get("data_limite_chegada") else None,
         max_escalas=int(f["max_escalas"]),
         max_min_por_trecho=int(float(f["max_horas_por_trecho"]) * 60),
         destaques=[Highlight(**h) for h in raw.get("destaques") or []],
@@ -123,4 +135,5 @@ def load(path: Path | str | None = None) -> Config:
         max_falhas_seguidas=int(c["max_falhas_seguidas"]),
         poc_ida=[_d(x) for x in poc.get("ida") or []],
         poc_volta=[_d(x) for x in poc.get("volta") or []],
+        raw=raw,
     )

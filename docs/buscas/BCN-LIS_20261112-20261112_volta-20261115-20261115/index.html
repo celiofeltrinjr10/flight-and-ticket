@@ -1,0 +1,664 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Passagens BCN → São Paulo</title>
+<meta name="description" content="Preços diários Barcelona ↔ São Paulo (até 1 escala, nenhum voo acima de 16h).">
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.5.1/dist/echarts.min.js"></script>
+<style>
+:root {
+  color-scheme: light;
+  --bg: #f7f7f5; --surface: #fcfcfb; --surface-2: #f0efec; --border: #e2e1dc;
+  --text: #0b0b0b; --text-2: #52514e; --muted: #7d7c77; --accent: #2a78d6;
+  --s1: #2a78d6; --s2: #eb6834; --s3: #1baf7a;
+  --good: #1a9e5f; --mid: #f0efec; --bad: #d64545; --empty: #ebeae5;
+  --up: #b42318; --down: #08783e;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #121211; --surface: #1a1a19; --surface-2: #242422; --border: #34342f;
+    --text: #f0efec; --text-2: #c3c2b7; --muted: #94938b; --accent: #3987e5;
+    --s1: #3987e5; --s2: #d95926; --s3: #199e70;
+    --good: #1f8f58; --mid: #3a3a36; --bad: #c94444; --empty: #222220;
+    --up: #f97066; --down: #47cd89;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #121211; --surface: #1a1a19; --surface-2: #242422; --border: #34342f;
+  --text: #f0efec; --text-2: #c3c2b7; --muted: #94938b; --accent: #3987e5;
+  --s1: #3987e5; --s2: #d95926; --s3: #199e70;
+  --good: #1f8f58; --mid: #3a3a36; --bad: #c94444; --empty: #222220;
+  --up: #f97066; --down: #47cd89;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text);
+  font: 15px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+a { color: var(--accent); }
+header, main { max-width: 1180px; margin: 0 auto; padding: 0 16px; }
+header { padding-top: 20px; }
+h1 { font-size: 1.5rem; margin: 0 0 4px; }
+h2 { font-size: 1.15rem; margin: 0 0 6px; }
+h3 { font-size: .95rem; margin: 18px 0 8px; color: var(--text-2); }
+.sub { color: var(--text-2); font-size: .9rem; }
+.sub b { color: var(--text); }
+.warn { background: #fff4e5; color: #7a4100; border-radius: 8px; padding: 8px 12px; margin-top: 8px; font-size: .9rem; }
+:root[data-theme="dark"] .warn { background: #3a2a10; color: #f5c77e; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .warn { background: #3a2a10; color: #f5c77e; } }
+.filters { position: sticky; top: 0; z-index: 20; background: var(--bg); border-bottom: 1px solid var(--border);
+  margin: 14px 0 0; padding: 10px 16px; }
+.filters .row { max-width: 1180px; margin: 0 auto; display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; }
+.filters label { font-size: .85rem; color: var(--text-2); display: flex; gap: 6px; align-items: center; }
+select, input[type=range] { font: inherit; font-size: .9rem; }
+select { background: var(--surface); color: var(--text); border: 1px solid var(--border); border-radius: 6px; padding: 4px 6px; }
+section { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin: 16px 0; }
+.note { color: var(--text-2); font-size: .85rem; margin: 0 0 10px; }
+#insights ul { margin: 0; padding-left: 18px; }
+#insights li { margin: 4px 0; }
+.scale { display: flex; align-items: center; gap: 8px; font-size: .8rem; color: var(--text-2); margin-bottom: 4px; flex-wrap: wrap; }
+.scale .bar { width: 140px; height: 10px; border-radius: 5px; }
+.months { display: flex; flex-wrap: wrap; gap: 16px; }
+.month { flex: 1 1 320px; max-width: 460px; }
+.month h4 { margin: 0 0 6px; font-size: .85rem; color: var(--text-2); }
+.grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
+.wd { font-size: .7rem; color: var(--muted); text-align: center; padding-bottom: 2px; }
+.cell { position: relative; border: 0; border-radius: 4px; min-height: 52px; padding: 3px 2px; font: inherit;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; line-height: 1.15; }
+.cell .dn { position: absolute; top: 2px; left: 4px; font-size: .62rem; opacity: .8; }
+.cell .pr { font-size: .78rem; font-weight: 600; margin-top: 6px; }
+.cell .al { font-size: .64rem; opacity: .9; }
+.cell .mk { position: absolute; top: 3px; right: 4px; font-size: .55rem; }
+.cell .ch { position: absolute; bottom: 2px; right: 3px; font-size: .58rem; }
+.cell.off { background: transparent; cursor: default; }
+.cell.none { background: var(--empty); color: var(--muted); cursor: default; }
+.cell.sel { outline: 2px solid var(--text); outline-offset: 1px; }
+.cell:focus-visible { outline: 2px solid var(--accent); }
+.detail { margin-top: 10px; border: 1px solid var(--border); border-radius: 10px; padding: 12px; background: var(--surface-2); }
+.detail h4 { margin: 0 0 8px; }
+.opt { padding: 8px 0; border-top: 1px solid var(--border); }
+.opt:first-of-type { border-top: 0; }
+.opt .top { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+.opt .price { font-weight: 700; font-size: 1.05rem; }
+.opt .meta { color: var(--text-2); font-size: .85rem; }
+.tag { display: inline-block; font-size: .7rem; padding: 1px 6px; border-radius: 10px; border: 1px solid var(--border); color: var(--text-2); margin-left: 4px; }
+.tip { position: fixed; z-index: 50; max-width: 340px; pointer-events: none; background: var(--surface); color: var(--text);
+  border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; box-shadow: 0 6px 24px rgba(0,0,0,.18); font-size: .85rem; }
+.tip[hidden] { display: none; }
+.scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.chart { width: 100%; height: 340px; }
+.toggle { display: inline-flex; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; margin-bottom: 8px; }
+.toggle button { font: inherit; font-size: .85rem; border: 0; padding: 5px 12px; background: var(--surface); color: var(--text-2); cursor: pointer; }
+.toggle button[aria-pressed=true] { background: var(--text); color: var(--surface); }
+.cards { display: grid; gap: 10px; }
+.card { border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; display: grid;
+  grid-template-columns: 70px 1fr 1fr 150px; gap: 6px 14px; align-items: start; }
+.card .rank { font-size: 1.4rem; font-weight: 700; }
+.card .rank small { display: block; font-size: .72rem; font-weight: 400; color: var(--text-2); }
+.card .leg b { font-size: .9rem; }
+.card .leg div { font-size: .82rem; color: var(--text-2); }
+.card .money { text-align: right; }
+.card .money .big { font-size: 1.15rem; font-weight: 700; }
+.card .money div { font-size: .8rem; color: var(--text-2); }
+@media (max-width: 720px) {
+  .card { grid-template-columns: 1fr 1fr; }
+  .card .rank { grid-column: 1 / -1; display: flex; gap: 8px; align-items: baseline; }
+  .card .money { grid-column: 1 / -1; text-align: left; display: flex; gap: 12px; flex-wrap: wrap; align-items: baseline; }
+}
+table { border-collapse: collapse; width: 100%; font-size: .85rem; }
+th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+th { color: var(--text-2); font-weight: 600; }
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+.up { color: var(--up); } .down { color: var(--down); } .flat { color: var(--muted); }
+.empty { color: var(--muted); font-style: italic; }
+details summary { cursor: pointer; color: var(--text-2); }
+footer { max-width: 1180px; margin: 0 auto; padding: 8px 16px 40px; color: var(--muted); font-size: .8rem; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Passagens Barcelona ↔ São Paulo</h1>
+  <div class="sub" id="hdr"></div>
+  <div id="hdr-warn"></div>
+</header>
+
+<div class="filters" role="region" aria-label="Filtros">
+  <div class="row">
+    <label>Companhia <select id="f-airline"></select></label>
+    <label>Escalas <select id="f-stops">
+      <option value="all">Direto ou 1 escala</option><option value="0">Só direto</option><option value="1">Só 1 escala</option>
+    </select></label>
+    <label>Duração máx. <input type="range" id="f-dur" min="10" max="40" step="1"> <span id="f-dur-v"></span></label>
+    <label><input type="checkbox" id="f-deadline"> <span id="f-deadline-l"></span></label>
+  </div>
+</div>
+
+<main>
+  <section id="insights"><h2>Resumo do dia</h2><ul id="insights-list"></ul></section>
+
+  <section>
+    <h2>Calendário de preços (trechos só de ida)</h2>
+    <p class="note">Cada dia mostra o menor preço e a companhia mais barata, com os filtros aplicados.
+      Passe o mouse ou toque num dia para ver as 3 melhores opções. ▲▼ = variação desde a coleta anterior.</p>
+    <div class="scale"><span>mais barato</span><span class="bar" id="scale-bar"></span><span>mais caro</span>
+      <span>· sem opção: <span class="tag" style="background:var(--empty)">—</span></span>
+      <span id="deadline-legend"></span></div>
+    <h3>Ida · Barcelona → São Paulo</h3>
+    <div class="months" id="cal-ida"></div>
+    <div class="detail" id="detail-ida" hidden></div>
+    <h3>Volta · São Paulo → Barcelona</h3>
+    <div class="months" id="cal-volta"></div>
+    <div class="detail" id="detail-volta" hidden></div>
+  </section>
+
+  <section>
+    <h2>Ida × volta: preço total estimado</h2>
+    <p class="note">Soma da ida mais barata com a volta mais barata de cada par de datas (passagens separadas).
+      ○ = combinação com preço real de ida e volta conferido hoje (Etapa B). Role para os lados no celular.</p>
+    <div class="scroll"><div id="matrix" class="chart" style="min-width:900px;height:760px"></div></div>
+  </section>
+
+  <section>
+    <h2>Companhias: LATAM direto × Royal Air Maroc × melhor outra</h2>
+    <p class="note">Menor preço por data em cada grupo. Os filtros de escalas, duração e data-limite valem aqui; o de companhia não.
+      Falhas na linha = a companhia não apareceu entre as opções que o Google mostrou naquele dia.</p>
+    <div class="toggle" id="cmp-toggle"><button data-d="ida" aria-pressed="true">Ida</button><button data-d="volta" aria-pressed="false">Volta</button></div>
+    <div id="cmp" class="chart"></div>
+  </section>
+
+  <section>
+    <h2>Top 10 combinações</h2>
+    <p class="note" id="score-note"></p>
+    <div class="cards" id="top10"></div>
+  </section>
+
+  <section>
+    <h2>Ida e volta conferida (Etapa B)</h2>
+    <p class="note">Para as combinações mais promissoras, o Google foi consultado como passagem única de ida e volta,
+      que às vezes sai mais barata que dois trechos. "Mesmos voos" = exatamente os voos da soma;
+      "melhor ida e volta" = a volta mais barata que o Google vende junto com aquela ida.</p>
+    <div class="scroll"><table id="rt-table"></table></div>
+  </section>
+
+  <section>
+    <h2>Tendência</h2>
+    <p class="note">Menor preço encontrado em cada dia de coleta.</p>
+    <div id="trend" class="chart"></div>
+    <h3>Maiores variações por data</h3>
+    <div class="scroll"><table id="changes"></table></div>
+  </section>
+
+  <section>
+    <h2>Como ler e limitações</h2>
+    <ul class="note" id="about"></ul>
+    <details><summary id="err-summary"></summary><div class="scroll"><table id="errors"></table></div></details>
+  </section>
+</main>
+<footer id="foot"></footer>
+<div class="tip" id="tip" hidden></div>
+
+<script>
+const D = {"title":"BCN → LIS → BCN · ida 12/11–12/11, volta 15/11–15/11","links":{"principal":"../../","buscas":"../"},"generated_at":"2026-10-20T16:52+02:00","last_attempt":{"run_id":"2026-10-20_1649","inicio":"2026-10-20T14:49:08+00:00","fim":"2026-10-20T14:51:09+00:00","poc":false,"etapas":"AB","fontes":{"etapa_a":"google_ff","etapa_a_reserva":"google_browser","etapa_b":"google_browser"},"buscas":5,"falhas":0,"tentativas_com_erro":2,"itinerarios":26,"itinerarios_validos":26,"combinacoes_ida_volta":3,"erro_fatal":"","dia":"2026-10-20"},"latest":{"run_id":"2026-10-20_1649","inicio":"2026-10-20T14:49:08+00:00","fim":"2026-10-20T14:51:09+00:00","poc":false,"etapas":"AB","fontes":{"etapa_a":"google_ff","etapa_a_reserva":"google_browser","etapa_b":"google_browser"},"buscas":5,"falhas":0,"tentativas_com_erro":2,"itinerarios":26,"itinerarios_validos":26,"combinacoes_ida_volta":3,"erro_fatal":"","dia":"2026-10-20"},"config":{"moeda":"EUR","origem":"BCN","destino":"LIS","aeroportos_origem":[],"aeroportos_destino":[],"adultos":1,"classe":"economy","ida":["2026-11-12","2026-11-12"],"volta":["2026-11-15","2026-11-15"],"deadline":null,"pesos":{"preco":0.6,"duracao_total":0.25,"conexao":0.15},"max_escalas":1,"max_horas_trecho":16.0,"destaques":[]},"options":[{"d":"ida","date":"2026-11-12","p":38.0,"al":"FR","aln":"Ryanair","fl":"FR3078","rt":"BCN-LIS","st":0,"seg":[125],"cn":[],"tot":125,"dep":"2026-11-12T18:00","arr":"2026-11-12T19:05","lg":125,"src":"google_fast_flights","url":"https://www.google.com/travel/flights/search?tfs=GhwSCjIwMjYtMTEtMTIoAWoFEgNCQ05yBRIDTElTQgEBSAGYAQI=&hl=en&curr=EUR","hl":""},{"d":"ida","date":"2026-11-12","p":39.0,"al":"U2","aln":"easyJet","fl":"U27682","rt":"BCN-LIS","st":0,"seg":[130],"cn":[],"tot":130,"dep":"2026-11-12T10:00","arr":"2026-11-12T11:10","lg":130,"src":"google_fast_flights","url":"https://www.google.com/travel/flights/search?tfs=GhwSCjIwMjYtMTEtMTIoAWoFEgNCQ05yBRIDTElTQgEBSAGYAQI=&hl=en&curr=EUR","hl":""},{"d":"ida","date":"2026-11-12","p":43.0,"al":"VY","aln":"Vueling","fl":"VY1148","rt":"BCN-LIS","st":0,"seg":[125],"cn":[],"tot":125,"dep":"2026-11-12T15:40","arr":"2026-11-12T16:45","lg":125,"src":"google_fast_flights","url":"https://www.google.com/travel/flights/search?tfs=GhwSCjIwMjYtMTEtMTIoAWoFEgNCQ05yBRIDTElTQgEBSAGYAQI=&hl=en&curr=EUR","hl":""},{"d":"ida","date":"2026-11-12","p":43.0,"al":"VY","aln":"Vueling","fl":"VY1146","rt":"BCN-LIS","st":0,"seg":[130],"cn":[],"tot":130,"dep":"2026-11-12T12:15","arr":"2026-11-12T13:25","lg":130,"src":"google_fast_flights","url":"https://www.google.com/travel/flights/search?tfs=GhwSCjIwMjYtMTEtMTIoAWoFEgNCQ05yBRIDTElTQgEBSAGYAQI=&hl=en&curr=EUR","hl":""},{"d":"ida","date":"2026-11-12","p":43.0,"al":"VY","aln":"Vueling","fl":"VY1152","rt":"BCN-LIS","st":0,"seg":[125],"cn":[],"tot":125,"dep":"2026-11-12T17:15","arr":"2026-11-12T18:20","lg":125,"src":"google_fast_flights","url":"https://www.google.com/travel/flights/search?tfs=GhwSCjIwMjYtMTEtMTIoAWoFEgNCQ05yBRIDTElTQgEBSAGYAQI=&hl=en&curr=EUR","hl":""},{"d":"ida","date":"2026-11-12","p":43.0,"al":"VY","aln":"Vueling","fl":"VY1154","rt":"BCN-LIS","st":0,"seg":[125],"cn":[],"tot":125,"dep":"2026-11-12T19:20","arr":"2026-11-12T20:25","lg":125,"src":"google_fast_flights","url":"https://www.google.com/travel/flights/search?tfs=GhwSCjIwMjYtMTEtMTIoAWoFEgNCQ05yBRIDTElTQgEBSAGYAQI=&hl=en&curr=EUR","hl":""},{"d":"ida","date":"2026-11-12","p":48.0,"al":"VY","aln":"Vueling","fl":"VY1142","rt":"BCN-LIS","st":0,"seg":[135],"cn":[],"tot":135,"dep":"2026-11-12T07:15","arr":"2026-11-12T08:30","lg":135,"src":"google_fast_flights","url":"https://www.google.com/travel/flights/search?tfs=GhwSCjIwMjYtMTEtMTIoAWoFEgNCQ05yBRIDTElTQgEBSAGYAQI=&hl=en&curr=EUR","hl":""},{"d":"ida","date":"2026-11-12","p":107.0,"al":"TP","aln":"Tap Air Portugal","fl":"TP1033","rt":"BCN-LIS","st":0,"seg":[120],"cn":[],"tot":120,"dep":"2026-11-12T12:35","arr":"2026-11-12T13:35","lg":120,"src":"google_fast_flights","url":"https://www.google.com/travel/flights/search?tfs=GhwSCjIwMjYtMTEtMTIoAWoFEgNCQ05yBRIDTElTQgEBSAGYAQI=&hl=en&curr=EUR","hl":""},{"d":"ida","date":"2026-11-12","p":107.0,"al":"TP","aln":"Tap Air Portugal","fl":"TP1035","rt":"BCN-LIS","st":0,"seg":[120],"cn":[],"tot":120,"dep":"2026-11-12T14:35","arr":"2026-11-12T15:35","lg":120,"src":"google_fast_flights","url":"https://www.google.com/travel/flights/search?tfs=GhwSCjIwMjYtMTEtMTIoAWoFEgNCQ05yBRIDTElTQgEBSAGYAQI=&hl=en&curr=EUR","hl":""},{"d":"ida","date":"2026-11-12","p":132.0,"al":"TP","aln":"Tap Air Portugal","fl":"TP1039","rt":"BCN-LIS","st":0,"seg":[120],"cn":[],"tot":120,"dep":"2026-11-12T21:10","arr":"2026-11-12T22:10","lg":120,"src":"google_fast_flights","url":"https://www.google.com/travel/flights/search?tfs=GhwSCjIwMjYtMTEtMTIoAWoFEgNCQ05yBRIDTElTQgEBSAGYAQI=&hl=en&curr=EUR","hl":""},{"d":"ida","date":"2026-11-12","p":168.0,"al":"TP","aln":"Tap Air Portugal","fl":"TP1031","rt":"BCN-LIS","st":0,"seg":[125],"cn":[],"tot":125,"dep":"2026-11-12T10:55","arr":"2026-11-12T12:00","lg":125,"src":"google_fast_flights","url":"https://www.google.com/travel/flights/search?tfs=GhwSCjIwMjYtMTEtMTIoAWoFEgNCQ05yBRIDTElTQgEBSAGYAQI=&hl=en&curr=EUR","hl":""},{"d":"ida","date":"2026-11-12","p":204.0,"al":"TP","aln":"Tap Air Portugal","fl":"TP1041","rt":"BCN-LIS","st":0,"seg":[120],"cn":[],"tot":120,"dep":"2026-11-12T06:45","arr":"2026-11-12T07:45","lg":120,"src":"google_fast_flights","url":"https://www.google.com/travel/flights/search?tfs=GhwSCjIwMjYtMTEtMTIoAWoFEgNCQ05yBRIDTElTQgEBSAGYAQI=&hl=en&curr=EUR","hl":""},{"d":"ida","date":"2026-11-12","p":250.0,"al":"TP","aln":"Tap Air Portugal","fl":"TP1037","rt":"BCN-LIS","st":0,"seg":[120],"cn":[],"tot":120,"dep":"2026-11-12T18:05","arr":"2026-11-12T19:05","lg":120,"src":"google_fast_flights","url":"https://www.google.com/travel/flights/search?tfs=GhwSCjIwMjYtMTEtMTIoAWoFEgNCQ05yBRIDTElTQgEBSAGYAQI=&hl=en&curr=EUR","hl":""},{"d":"volta","date":"2026-11-15","p":59.0,"al":"U2","aln":"easyJet","fl":"U27655","rt":"LIS-BCN","st":0,"seg":[115],"cn":[],"tot":115,"dep":"2026-11-15T06:10","arr":"2026-11-15T09:05","lg":115,"src":"google_fast_flights","url":"https://www.google.com/travel/flights/search?tfs=GhwSCjIwMjYtMTEtMTUoAWoFEgNMSVNyBRIDQkNOQgEBSAGYAQI=&hl=en&curr=EUR","hl":""},{"d":"volta","date":"2026-11-15","p":99.0,"al":"VY","aln":"Vueling","fl":"VY1143","rt":"LIS-BCN","st":0,"seg":[125],"cn":[],"tot":125,"dep":"2026-11-15T09:05","arr":"2026-11-15T12:10","lg":125,"src":"google_fast_flights","url":"https://www.google.com/travel/flights/search?tfs=GhwSCjIwMjYtMTEtMTUoAWoFEgNMSVNyBRIDQkNOQgEBSAGYAQI=&hl=en&curr=EUR","hl":""},{"d":"volta","date":"2026-11-15","p":172.0,"al":"TP","aln":"Tap Air Portugal","fl":"TP1034","rt":"LIS-BCN","st":0,"seg":[115],"cn":[],"tot":115,"dep":"2026-11-15T10:50","arr":"2026-11-15T13:45","lg":115,"src":"google_fast_flights","url":"https://www.google.com/travel/flights/search?tfs=GhwSCjIwMjYtMTEtMTUoAWoFEgNMSVNyBRIDQkNOQgEBSAGYAQI=&hl=en&curr=EUR","hl":""},{"d":"volta","date":"2026-11-15","p":107.0,"al":"UX","aln":"Air Europa","fl":"UX1160 UX7701","rt":"LIS-MAD-BCN","st":1,"seg":[75,85],"cn":[550],"tot":710,"dep":"2026-11-15T20:05","arr":"2026-11-16T08:55","lg":85,"src":"google_fast_flights","url":"https://www.google.com/travel/flights/search?tfs=GhwSCjIwMjYtMTEtMTUoAWoFEgNMSVNyBRIDQkNOQgEBSAGYAQI=&hl=en&curr=EUR","hl":""},{"d":"volta","date":"2026-11-15","p":116.0,"al":"VY","aln":"Vueling","fl":"VY1153","rt":"LIS-BCN","st":0,"seg":[115],"cn":[],"tot":115,"dep":"2026-11-15T19:00","arr":"2026-11-15T21:55","lg":115,"src":"google_fast_flights","url":"https://www.google.com/travel/flights/search?tfs=GhwSCjIwMjYtMTEtMTUoAWoFEgNMSVNyBRIDQkNOQgEBSAGYAQI=&hl=en&curr=EUR","hl":""},{"d":"volta","date":"2026-11-15","p":116.0,"al":"VY","aln":"Vueling","fl":"VY1155","rt":"LIS-BCN","st":0,"seg":[114],"cn":[],"tot":114,"dep":"2026-11-15T21:05","arr":"2026-11-15T23:59","lg":114,"src":"google_fast_flights","url":"https://www.google.com/travel/flights/search?tfs=GhwSCjIwMjYtMTEtMTUoAWoFEgNMSVNyBRIDQkNOQgEBSAGYAQI=&hl=en&curr=EUR","hl":""},{"d":"volta","date":"2026-11-15","p":119.0,"al":"U2","aln":"easyJet","fl":"U27693","rt":"LIS-BCN","st":0,"seg":[110],"cn":[],"tot":110,"dep":"2026-11-15T18:35","arr":"2026-11-15T21:25","lg":110,"src":"google_fast_flights","url":"https://www.google.com/travel/flights/search?tfs=GhwSCjIwMjYtMTEtMTUoAWoFEgNMSVNyBRIDQkNOQgEBSAGYAQI=&hl=en&curr=EUR","hl":""},{"d":"volta","date":"2026-11-15","p":150.0,"al":"VY","aln":"Vueling","fl":"VY1147","rt":"LIS-BCN","st":0,"seg":[120],"cn":[],"tot":120,"dep":"2026-11-15T14:05","arr":"2026-11-15T17:05","lg":120,"src":"google_fast_flights","url":"https://www.google.com/travel/flights/search?tfs=GhwSCjIwMjYtMTEtMTUoAWoFEgNMSVNyBRIDQkNOQgEBSAGYAQI=&hl=en&curr=EUR","hl":""},{"d":"volta","date":"2026-11-15","p":150.0,"al":"VY","aln":"Vueling","fl":"VY1149","rt":"LIS-BCN","st":0,"seg":[115],"cn":[],"tot":115,"dep":"2026-11-15T17:40","arr":"2026-11-15T20:35","lg":115,"src":"google_fast_flights","url":"https://www.google.com/travel/flights/search?tfs=GhwSCjIwMjYtMTEtMTUoAWoFEgNMSVNyBRIDQkNOQgEBSAGYAQI=&hl=en&curr=EUR","hl":""},{"d":"volta","date":"2026-11-15","p":208.0,"al":"TP","aln":"Tap Air Portugal","fl":"TP1032","rt":"LIS-BCN","st":0,"seg":[115],"cn":[],"tot":115,"dep":"2026-11-15T08:50","arr":"2026-11-15T11:45","lg":115,"src":"google_fast_flights","url":"https://www.google.com/travel/flights/search?tfs=GhwSCjIwMjYtMTEtMTUoAWoFEgNMSVNyBRIDQkNOQgEBSAGYAQI=&hl=en&curr=EUR","hl":""},{"d":"volta","date":"2026-11-15","p":302.0,"al":"TP","aln":"Tap Air Portugal","fl":"TP1036","rt":"LIS-BCN","st":0,"seg":[115],"cn":[],"tot":115,"dep":"2026-11-15T14:20","arr":"2026-11-15T17:15","lg":115,"src":"google_fast_flights","url":"https://www.google.com/travel/flights/search?tfs=GhwSCjIwMjYtMTEtMTUoAWoFEgNMSVNyBRIDQkNOQgEBSAGYAQI=&hl=en&curr=EUR","hl":""},{"d":"volta","date":"2026-11-15","p":374.0,"al":"TP","aln":"Tap Air Portugal","fl":"TP1030","rt":"LIS-BCN","st":0,"seg":[115],"cn":[],"tot":115,"dep":"2026-11-15T07:10","arr":"2026-11-15T10:05","lg":115,"src":"google_fast_flights","url":"https://www.google.com/travel/flights/search?tfs=GhwSCjIwMjYtMTEtMTUoAWoFEgNMSVNyBRIDQkNOQgEBSAGYAQI=&hl=en&curr=EUR","hl":""},{"d":"volta","date":"2026-11-15","p":374.0,"al":"TP","aln":"Tap Air Portugal","fl":"TP1040","rt":"LIS-BCN","st":0,"seg":[115],"cn":[],"tot":115,"dep":"2026-11-15T20:50","arr":"2026-11-15T23:45","lg":115,"src":"google_fast_flights","url":"https://www.google.com/travel/flights/search?tfs=GhwSCjIwMjYtMTEtMTUoAWoFEgNMSVNyBRIDQkNOQgEBSAGYAQI=&hl=en&curr=EUR","hl":""}],"roundtrips":[{"run_id":"2026-10-20_1649","consultado_em":"2026-10-20T14:49:17+00:00","fonte":"google_browser","data_ida":"2026-11-12","data_volta":"2026-11-15","destaque":"","score_etapa_a":"100.0","voos_ida":"FR3078","companhias_ida":"FR","preco_ida":"38","voos_volta":"U27655","companhias_volta":"U2","preco_volta":"59","preco_soma_trechos":"97","preco_idavolta_mesmos_voos":"","voos_volta_melhor":"","companhias_volta_melhor":"","preco_idavolta_melhor":"","opcoes_volta_validas":"0","link":"","erro":"nenhuma volta válida na resposta"},{"run_id":"2026-10-20_1649","consultado_em":"2026-10-20T14:49:32+00:00","fonte":"google_browser","data_ida":"2026-11-12","data_volta":"2026-11-15","destaque":"","score_etapa_a":"98.7","voos_ida":"U27682","companhias_ida":"U2","preco_ida":"39","voos_volta":"U27655","companhias_volta":"U2","preco_volta":"59","preco_soma_trechos":"98","preco_idavolta_mesmos_voos":"98","voos_volta_melhor":"U27655","companhias_volta_melhor":"U2","preco_idavolta_melhor":"98","opcoes_volta_validas":"2","link":"https://www.google.com/travel/flights/search?tfs=CBwQAhpCEgoyMDI2LTExLTEyKAEiIAoDQkNOEgoyMDI2LTExLTEyGgNMSVMqAlUyMgQ3NjgyagcIARIDQkNOcgcIARIDTElTGiASCjIwMjYtMTEtMTUoAWoHCAESA0xJU3IHCAESA0JDTkABSAFwAZgBAQ&hl=en&curr=EUR","erro":""},{"run_id":"2026-10-20_1649","consultado_em":"2026-10-20T14:51:01+00:00","fonte":"google_browser","data_ida":"2026-11-12","data_volta":"2026-11-15","destaque":"","score_etapa_a":"94.3","voos_ida":"VY1148","companhias_ida":"VY","preco_ida":"43","voos_volta":"U27655","companhias_volta":"U2","preco_volta":"59","preco_soma_trechos":"102","preco_idavolta_mesmos_voos":"","voos_volta_melhor":"VY1143","companhias_volta_melhor":"VY","preco_idavolta_melhor":"142","opcoes_volta_validas":"12","link":"https://www.google.com/travel/flights/search?tfs=CBwQAhpCEgoyMDI2LTExLTEyKAEiIAoDQkNOEgoyMDI2LTExLTEyGgNMSVMqAlZZMgQxMTQ4agcIARIDQkNOcgcIARIDTElTGiASCjIwMjYtMTEtMTUoAWoHCAESA0xJU3IHCAESA0JDTkABSAFwAZgBAQ&hl=en&curr=EUR","erro":""}],"rt_factors":{"U2":{"f":1.0,"n":1}},"groups":[{"id":"U2","nome":"easyJet","al":"U2"},{"id":"VY","nome":"Vueling","al":"VY"}],"errors":[{"etapa":"B","direcao":"idavolta","data":"2026-11-12","tentativa":"1","erro":"ProviderError: a página de ida e volta não carregou resultados"},{"etapa":"B","direcao":"idavolta","data":"2026-11-12","tentativa":"2","erro":"ProviderError: a página de ida e volta não carregou resultados"}],"history":{"days":["2026-10-20"],"series":{"ida|2026-11-12|all":[38.0],"ida|2026-11-12|outra":[38.0],"volta|2026-11-15|all":[59.0],"volta|2026-11-15|outra":[59.0]}},"insights":["Tendências aparecem a partir da segunda coleta diária.","Comprando ida e volta juntas (mesmos voos), a passagem sai em média 0 € mais cara que dois trechos separados (1 combinações conferidas).","Em 1 combinação(ões) o Google não vende a mesma volta numa passagem única de ida e volta (em geral, companhias diferentes): compare a soma dos trechos com a melhor ida e volta encontrada para aquela ida."]};
+const C = D.config;
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const money = v => v == null || isNaN(v) ? "—" : Math.round(v).toLocaleString("pt-BR") + (C.moeda === "EUR" ? " €" : " " + C.moeda);
+const hm = m => `${Math.floor(m / 60)}h${String(m % 60).padStart(2, "0")}`;
+const WD = ["dom", "seg", "ter", "qua", "qui", "sex", "sáb"];
+const parseISO = s => { const [y, m, d] = s.split("-").map(Number); return new Date(Date.UTC(y, m - 1, d)); };
+const iso = dt => dt.toISOString().slice(0, 10);
+const dm = s => { const d = parseISO(s); return `${WD[d.getUTCDay()]} ${String(d.getUTCDate()).padStart(2, "0")}/${String(d.getUTCMonth() + 1).padStart(2, "0")}`; };
+const hhmm = s => s.slice(11, 16);
+const HLNAME = Object.fromEntries(C.destaques.map(h => [h.id, h.nome]));
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const hoverable = matchMedia("(hover: hover)").matches;
+
+const maxTot = Math.max(10, ...D.options.map(o => Math.ceil(o.tot / 60)));
+const state = { airline: "all", stops: "all", maxDur: maxTot, deadline: false, cmp: "ida", sel: { ida: null, volta: null } };
+
+// ---------- filtros ----------
+function passes(o, ignoreAirline) {
+  if (!ignoreAirline && state.airline !== "all") {
+    if (state.airline.startsWith("hl:")) { if (o.hl !== state.airline.slice(3)) return false; }
+    else if (!o.al.split("+").includes(state.airline)) return false;
+  }
+  if (state.stops !== "all" && o.st !== Number(state.stops)) return false;
+  if (o.tot > state.maxDur * 60) return false;
+  if (o.lg > C.max_horas_trecho * 60) return false;
+  if (state.deadline && o.d === "ida" && o.arr.slice(0, 10) > C.deadline) return false;
+  return true;
+}
+function groups(ignoreAirline) {
+  const g = new Map();
+  for (const o of D.options) {
+    if (!passes(o, ignoreAirline)) continue;
+    const k = o.d + "|" + o.date;
+    if (!g.has(k)) g.set(k, []);
+    g.get(k).push(o);
+  }
+  for (const v of g.values()) v.sort((a, b) => a.p - b.p);
+  return g;
+}
+
+// ---------- cor (verde = barato, vermelho = caro) ----------
+const hex2rgb = h => { h = h.replace("#", ""); return [0, 2, 4].map(i => parseInt(h.slice(i, i + 2), 16)); };
+const mix = (a, b, t) => a.map((x, i) => Math.round(x + (b[i] - x) * t));
+const rgb = c => `rgb(${c.join(",")})`;
+function makeScale(values) {
+  const s = [...values].sort((a, b) => a - b);
+  if (!s.length) return () => null;
+  const q = p => s[Math.min(s.length - 1, Math.max(0, Math.round(p * (s.length - 1))))];
+  const lo = q(0.05), hi = q(0.95);
+  const G = hex2rgb(css("--good")), M = hex2rgb(css("--mid")), R = hex2rgb(css("--bad"));
+  return v => {
+    const t = hi > lo ? Math.min(1, Math.max(0, (v - lo) / (hi - lo))) : 0.5;
+    return t < 0.5 ? mix(G, M, t * 2) : mix(M, R, (t - 0.5) * 2);
+  };
+}
+const inkOn = c => (0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]) / 255 > 0.55 ? "#111" : "#fff";
+
+// ---------- histórico / variações ----------
+const H = D.history, ND = H.days.length;
+function change(dir, date, cat = "all") {
+  const s = H.series[`${dir}|${date}|${cat}`];
+  if (!s || ND === 0) return null;
+  const now = s[ND - 1];
+  const prev = ND >= 2 ? s[ND - 2] : null;
+  let wk = null;
+  if (ND >= 2) {
+    const target = parseISO(H.days[ND - 1]).getTime() - 7 * 864e5;
+    for (let i = ND - 2; i >= 0; i--) if (parseISO(H.days[i]).getTime() <= target) { wk = s[i]; break; }
+  }
+  return { now, prev, wk };
+}
+function pct(now, old) {
+  if (now == null || old == null) return null;
+  return now / old - 1;
+}
+function arrow(p, withPct = true) {
+  if (p == null) return `<span class="flat">—</span>`;
+  if (Math.abs(p) < 0.02) return `<span class="flat">estável</span>`;
+  const txt = withPct ? ` ${Math.abs(p * 100).toFixed(0)}%` : "";
+  return p < 0 ? `<span class="down">▼${txt}</span>` : `<span class="up">▲${txt}</span>`;
+}
+
+// ---------- cabeçalho ----------
+function renderHeader() {
+  const L = D.latest, A = D.last_attempt;
+  const when = iso => new Date(iso).toLocaleString("pt-BR", { timeZone: "Europe/Madrid", dateStyle: "short", timeStyle: "short" });
+  if (!L) { $("#hdr").innerHTML = "Ainda não há coleta concluída."; return; }
+  const fontes = [...new Set(Object.values(L.fontes || {}).filter(Boolean))].join(", ");
+  $("#hdr").innerHTML = `Atualizado em <b>${when(L.fim)}</b> (Madri) · fontes: <b>${esc(fontes)}</b> · ` +
+    `<b>${L.buscas}</b> buscas, <b>${L.falhas}</b> falhas · ${L.itinerarios_validos} opções válidas · ` +
+    `${esc(C.origem)} ↔ ${esc(C.aeroportos_destino.join("/"))}, até ${C.max_escalas} escala, nenhum voo acima de ${C.max_horas_trecho}h`;
+  if (A && A.run_id !== L.run_id)
+    $("#hdr-warn").innerHTML = `<div class="warn">A coleta mais recente (${esc(A.run_id)}) não trouxe dados; mostrando a de ${esc(L.run_id)}.</div>`;
+  else if (L.falhas > 0)
+    $("#hdr-warn").innerHTML = `<div class="warn">${L.falhas} busca(s) falharam nesta coleta; essas datas aparecem sem preço.</div>`;
+}
+
+function setupFilters() {
+  const names = {};
+  for (const o of D.options) {
+    const codes = o.al.split("+"), ns = o.aln.split(" + ");
+    codes.forEach((c, i) => { if (!names[c]) names[c] = codes.length === ns.length ? ns[i] : c; });
+  }
+  const sel = $("#f-airline");
+  sel.innerHTML = `<option value="all">Todas</option>` +
+    C.destaques.map(h => `<option value="hl:${esc(h.id)}">★ ${esc(h.nome)}</option>`).join("") +
+    Object.keys(names).sort((a, b) => names[a].localeCompare(names[b]))
+      .map(c => `<option value="${esc(c)}">${esc(names[c])} (${esc(c)})</option>`).join("");
+  const dur = $("#f-dur");
+  dur.max = maxTot; dur.value = maxTot;
+  $("#f-dur-v").textContent = `${maxTot}h`;
+  $("#f-deadline-l").textContent = `Só idas que chegam até ${dm(C.deadline)}`;
+  sel.onchange = e => { state.airline = e.target.value; renderAll(); };
+  $("#f-stops").onchange = e => { state.stops = e.target.value; renderAll(); };
+  dur.oninput = e => { state.maxDur = Number(e.target.value); $("#f-dur-v").textContent = `${state.maxDur}h`; renderAll(); };
+  $("#f-deadline").onchange = e => { state.deadline = e.target.checked; renderAll(); };
+  document.querySelectorAll("#cmp-toggle button").forEach(b => b.onclick = () => {
+    state.cmp = b.dataset.d;
+    document.querySelectorAll("#cmp-toggle button").forEach(x => x.setAttribute("aria-pressed", x === b));
+    renderCompare();
+  });
+}
+
+// ---------- calendário ----------
+function optHTML(o) {
+  const conn = o.cn.length ? `${o.st} escala · conexão ${o.cn.map(hm).join(", ")} em ${esc(o.rt.split("-").slice(1, -1).join(", "))}` : "direto";
+  const hl = o.hl ? `<span class="tag">★ destaque</span>` : "";
+  return `<div class="opt"><div class="top"><span class="price">${money(o.p)}</span>` +
+    `<span><b>${esc(o.aln || o.al)}</b>${hl}</span></div>` +
+    `<div class="meta">${esc(o.fl)} · ${esc(o.rt)} · ${conn}</div>` +
+    `<div class="meta">partida ${dm(o.dep.slice(0, 10))} ${hhmm(o.dep)} → chegada ${dm(o.arr.slice(0, 10))} ${hhmm(o.arr)} (hora local) · ` +
+    `total ${hm(o.tot)} · voos ${o.seg.map(hm).join(" + ")}</div>` +
+    `<div class="meta">fonte: ${esc(o.src)} · <a href="${esc(o.url)}" target="_blank" rel="noopener">ver no Google Flights ↗</a></div></div>`;
+}
+function dayHTML(dir, date, opts, withLinks = true) {
+  const ch = change(dir, date);
+  const chTxt = ch && ND >= 2 ? `vs. coleta anterior: ${arrow(pct(ch.now, ch.prev))} · vs. 7 dias: ${arrow(pct(ch.now, ch.wk))}` : "";
+  const label = dir === "ida" ? "Ida" : "Volta";
+  let body = opts.slice(0, 3).map(optHTML).join("");
+  if (!withLinks) body = body.replace(/<div class="meta">fonte:.*?<\/div>/g, "");
+  return `<h4>${label} · ${dm(date)}</h4><div class="meta">${chTxt}</div>${body}`;
+}
+function renderCalendar(dir, g) {
+  const [a, b] = C[dir];
+  const start = parseISO(a), end = parseISO(b);
+  const vals = [];
+  for (const [k, v] of g) if (k.startsWith(dir + "|")) vals.push(v[0].p);
+  const sc = makeScale(vals);
+  let html = "";
+  let cur = new Date(Date.UTC(start.getUTCFullYear(), start.getUTCMonth(), 1));
+  while (cur <= end) {
+    const y = cur.getUTCFullYear(), m = cur.getUTCMonth();
+    const nm = cur.toLocaleDateString("pt-BR", { month: "long", year: "numeric", timeZone: "UTC" });
+    const name = nm.charAt(0).toUpperCase() + nm.slice(1);
+    html += `<div class="month"><h4>${name}</h4><div class="grid">` +
+      ["seg", "ter", "qua", "qui", "sex", "sáb", "dom"].map(w => `<div class="wd">${w}</div>`).join("");
+    const lead = (cur.getUTCDay() + 6) % 7;
+    html += `<div></div>`.repeat(lead);
+    const days = new Date(Date.UTC(y, m + 1, 0)).getUTCDate();
+    for (let d = 1; d <= days; d++) {
+      const dt = new Date(Date.UTC(y, m, d)), s = iso(dt);
+      if (dt < start || dt > end) { html += `<div class="cell off"></div>`; continue; }
+      const opts = g.get(dir + "|" + s);
+      if (!opts) { html += `<div class="cell none" title="sem opção com os filtros"><span class="dn">${d}</span><span class="pr">—</span></div>`; continue; }
+      const best = opts[0], c = sc(best.p), ink = inkOn(c);
+      const ch = change(dir, s);
+      const p = ch ? pct(ch.now, ch.prev) : null;
+      const chMark = p == null || Math.abs(p) < 0.02 ? "" : (p < 0 ? "▼" : "▲");
+      const mk = dir === "ida" && best.arr.slice(0, 10) <= C.deadline ? `<span class="mk" aria-label="chega até a data-limite">●</span>` : "";
+      const isSel = state.sel[dir] === s ? " sel" : "";
+      html += `<button class="cell${isSel}" style="background:${rgb(c)};color:${ink}" data-dir="${dir}" data-date="${s}" ` +
+        `aria-label="${dm(s)}: ${money(best.p)}, ${esc(best.al)}"><span class="dn">${d}</span>${mk}` +
+        `<span class="pr">${Math.round(best.p)}</span><span class="al">${esc(best.al)}</span><span class="ch">${chMark}</span></button>`;
+    }
+    html += `</div></div>`;
+    cur = new Date(Date.UTC(y, m + 1, 1));
+  }
+  const el = $("#cal-" + dir);
+  el.innerHTML = html;
+  el.querySelectorAll("button.cell").forEach(btn => {
+    btn.onclick = () => { state.sel[dir] = state.sel[dir] === btn.dataset.date ? null : btn.dataset.date; hideTip(); renderCalendars(); };
+    if (hoverable) {
+      btn.onmouseenter = e => showTip(e, dayHTML(dir, btn.dataset.date, g.get(dir + "|" + btn.dataset.date), false));
+      btn.onmousemove = moveTip;
+      btn.onmouseleave = hideTip;
+    }
+  });
+  const det = $("#detail-" + dir);
+  const sel = state.sel[dir];
+  if (sel && g.get(dir + "|" + sel)) { det.hidden = false; det.innerHTML = dayHTML(dir, sel, g.get(dir + "|" + sel)); }
+  else det.hidden = true;
+}
+function renderCalendars() {
+  const g = groups(false);
+  renderCalendar("ida", g);
+  renderCalendar("volta", g);
+}
+const tip = $("#tip");
+function showTip(e, html) { tip.innerHTML = html; tip.hidden = false; moveTip(e); }
+function moveTip(e) {
+  const w = tip.offsetWidth, h = tip.offsetHeight;
+  let x = e.clientX + 14, y = e.clientY + 14;
+  if (x + w > innerWidth - 8) x = e.clientX - w - 14;
+  if (y + h > innerHeight - 8) y = Math.max(8, e.clientY - h - 14);
+  tip.style.left = x + "px"; tip.style.top = y + "px";
+}
+function hideTip() { tip.hidden = true; }
+
+// ---------- gráficos (ECharts) ----------
+const charts = {};
+function chart(id) {
+  if (!charts[id]) charts[id] = echarts.init(document.getElementById(id), null, { renderer: "canvas" });
+  return charts[id];
+}
+function baseText() {
+  return { color: css("--text-2"), fontFamily: "system-ui, -apple-system, Segoe UI, Roboto, sans-serif" };
+}
+function axisStyle() {
+  return {
+    axisLine: { lineStyle: { color: css("--border") } }, axisTick: { show: false },
+    axisLabel: { color: css("--text-2"), fontSize: 11 }, splitLine: { lineStyle: { color: css("--border"), opacity: .6 } },
+  };
+}
+function tooltipStyle() {
+  return { backgroundColor: css("--surface"), borderColor: css("--border"), textStyle: { color: css("--text"), fontSize: 12 }, confine: true };
+}
+function datesOf(dir) {
+  const [a, b] = C[dir], out = [];
+  for (let d = parseISO(a); d <= parseISO(b); d = new Date(d.getTime() + 864e5)) out.push(iso(d));
+  return out;
+}
+
+function rtIndex() {
+  const m = new Map();
+  for (const r of D.roundtrips) {
+    if (!r.preco_idavolta_melhor && !r.preco_idavolta_mesmos_voos) continue;
+    const k = r.data_ida + "|" + r.data_volta;
+    const best = Number(r.preco_idavolta_mesmos_voos || r.preco_idavolta_melhor);
+    if (!m.has(k) || m.get(k).best > best) m.set(k, { best, r });
+  }
+  return m;
+}
+
+function renderMatrix() {
+  const g = groups(false);
+  const xs = datesOf("ida"), ys = datesOf("volta");
+  const data = [], vals = [];
+  xs.forEach((x, i) => {
+    const a = g.get("ida|" + x);
+    if (!a) return;
+    ys.forEach((y, j) => {
+      const b = g.get("volta|" + y);
+      if (!b) return;
+      const v = a[0].p + b[0].p;
+      data.push([i, j, v]); vals.push(v);
+    });
+  });
+  const rts = [];
+  for (const [k, v] of rtIndex()) {
+    const [x, y] = k.split("|");
+    const i = xs.indexOf(x), j = ys.indexOf(y);
+    if (i >= 0 && j >= 0) rts.push([i, j, v.best]);
+  }
+  const s = [...vals].sort((a, b) => a - b);
+  const q = p => s.length ? s[Math.round(p * (s.length - 1))] : 0;
+  const c = chart("matrix");
+  c.setOption({
+    textStyle: baseText(), animation: false,
+    grid: { left: 70, right: 16, top: 56, bottom: 60 },
+    tooltip: Object.assign(tooltipStyle(), {
+      formatter: p => {
+        const x = xs[p.value[0]], y = ys[p.value[1]];
+        const a = g.get("ida|" + x)?.[0], b = g.get("volta|" + y)?.[0];
+        const rt = rtIndex().get(x + "|" + y);
+        let h = `<b>Ida ${dm(x)} · Volta ${dm(y)}</b><br>`;
+        if (a && b) h += `Estimado (2 trechos): <b>${money(a.p + b.p)}</b><br>ida ${esc(a.al)} ${money(a.p)} + volta ${esc(b.al)} ${money(b.p)}`;
+        if (rt) h += `<br>Ida e volta conferida: <b>${money(rt.best)}</b>`;
+        return h;
+      },
+    }),
+    xAxis: Object.assign({ type: "category", data: xs.map(dm), name: "data de ida", nameLocation: "middle", nameGap: 44,
+      nameTextStyle: { color: css("--text-2") } }, axisStyle(), { splitLine: { show: false } }),
+    yAxis: Object.assign({ type: "category", data: ys.map(dm), name: "volta", nameTextStyle: { color: css("--text-2") } }, axisStyle(), { splitLine: { show: false } }),
+    visualMap: { type: "continuous", min: q(0.05), max: q(0.95), dimension: 2, seriesIndex: 0, calculable: false,
+      orient: "horizontal", left: "center", top: 4, itemHeight: 140, itemWidth: 10,
+      text: ["mais caro", "mais barato"], textStyle: { color: css("--text-2") },
+      inRange: { color: [css("--good"), css("--mid"), css("--bad")] }, formatter: v => money(v) },
+    series: [
+      { type: "heatmap", data, itemStyle: { borderColor: css("--surface"), borderWidth: 1 }, emphasis: { itemStyle: { borderColor: css("--text"), borderWidth: 1 } } },
+      { type: "scatter", data: rts, symbol: "circle", symbolSize: 9, itemStyle: { color: "transparent", borderColor: css("--text"), borderWidth: 1.5 }, z: 3 },
+    ],
+  }, true);
+}
+
+function renderCompare() {
+  const dir = state.cmp, xs = datesOf(dir);
+  const g = groups(true);
+  const pick = (opts, f) => { const o = (opts || []).find(f); return o ? o.p : null; };
+  const lines = [
+    { name: HLNAME.latam || "LATAM direto", color: css("--s1"), f: o => o.hl === "latam" },
+    { name: HLNAME.ram || "Royal Air Maroc", color: css("--s2"), f: o => o.hl === "ram" },
+    { name: "Melhor outra companhia", color: css("--s3"), f: o => !o.hl },
+  ];
+  const c = chart("cmp");
+  c.setOption({
+    textStyle: baseText(), animation: false,
+    grid: { left: 64, right: 16, top: 44, bottom: 40 },
+    legend: { top: 0, textStyle: { color: css("--text-2") }, itemWidth: 18, itemHeight: 3, icon: "rect" },
+    tooltip: Object.assign(tooltipStyle(), { trigger: "axis", axisPointer: { type: "line", lineStyle: { color: css("--muted") } },
+      valueFormatter: v => money(v) }),
+    xAxis: Object.assign({ type: "category", data: xs.map(dm), boundaryGap: false }, axisStyle(), { splitLine: { show: false } }),
+    yAxis: Object.assign({ type: "value", scale: true, axisLabel: { color: css("--text-2"), formatter: v => money(v) } }, { splitLine: axisStyle().splitLine, axisLine: { show: false } }),
+    series: lines.map(l => ({
+      name: l.name, type: "line", data: xs.map(x => pick(g.get(dir + "|" + x), l.f)), connectNulls: false,
+      showSymbol: false, symbolSize: 8, lineStyle: { width: 2, color: l.color }, itemStyle: { color: l.color },
+      emphasis: { focus: "series" },
+    })),
+  }, true);
+}
+
+function renderTrend() {
+  const days = H.days;
+  const mins = dir => days.map((_, i) => {
+    let m = null;
+    for (const [k, s] of Object.entries(H.series)) if (k.startsWith(dir + "|") && k.endsWith("|all") && s[i] != null) m = m == null ? s[i] : Math.min(m, s[i]);
+    return m;
+  });
+  const ida = mins("ida"), volta = mins("volta");
+  const combo = ida.map((v, i) => v != null && volta[i] != null ? v + volta[i] : null);
+  const lines = [
+    { name: "Ida mais barata", d: ida, color: css("--s1") },
+    { name: "Volta mais barata", d: volta, color: css("--s2") },
+    { name: "Menor ida + volta (estimada)", d: combo, color: css("--s3") },
+  ];
+  chart("trend").setOption({
+    textStyle: baseText(), animation: false,
+    grid: { left: 64, right: 16, top: 44, bottom: 40 },
+    legend: { top: 0, textStyle: { color: css("--text-2") }, itemWidth: 18, itemHeight: 3, icon: "rect" },
+    tooltip: Object.assign(tooltipStyle(), { trigger: "axis", valueFormatter: v => money(v) }),
+    xAxis: Object.assign({ type: "category", data: days.map(d => dm(d)) }, axisStyle(), { splitLine: { show: false } }),
+    yAxis: Object.assign({ type: "value", scale: true, axisLabel: { color: css("--text-2"), formatter: v => money(v) } }, { splitLine: axisStyle().splitLine, axisLine: { show: false } }),
+    series: lines.map(l => ({ name: l.name, type: "line", data: l.d, symbolSize: 8, showSymbol: days.length < 30,
+      lineStyle: { width: 2, color: l.color }, itemStyle: { color: l.color, borderColor: css("--surface"), borderWidth: 2 } })),
+  }, true);
+
+  const rows = [];
+  for (const k of Object.keys(H.series)) {
+    if (!k.endsWith("|all")) continue;
+    const [dir, date] = k.split("|");
+    const ch = change(dir, date);
+    if (!ch || ch.now == null) continue;
+    rows.push({ dir, date, ...ch, p1: pct(ch.now, ch.prev), p7: pct(ch.now, ch.wk) });
+  }
+  rows.sort((a, b) => Math.abs(b.p1 ?? 0) - Math.abs(a.p1 ?? 0));
+  const top = rows.filter(r => r.p1 != null).slice(0, 12);
+  $("#changes").innerHTML = top.length
+    ? `<tr><th>Trecho</th><th>Data</th><th class="num">Hoje</th><th class="num">Coleta anterior</th><th>Variação</th><th class="num">7 dias atrás</th><th>Variação</th></tr>` +
+      top.map(r => `<tr><td>${r.dir}</td><td>${dm(r.date)}</td><td class="num">${money(r.now)}</td><td class="num">${money(r.prev)}</td>` +
+        `<td>${arrow(r.p1)}</td><td class="num">${money(r.wk)}</td><td>${arrow(r.p7)}</td></tr>`).join("")
+    : `<tr><td class="empty">Variações aparecem a partir da segunda coleta diária.</td></tr>`;
+}
+
+// ---------- Top 10 ----------
+function scoreRows(rows) {
+  const w = [C.pesos.preco || 0, C.pesos.duracao_total || 0, C.pesos.conexao || 0];
+  const tw = w.reduce((a, b) => a + b, 0) || 1;
+  const lo = [0, 1, 2].map(i => Math.min(...rows.map(r => r.m[i])));
+  const hi = [0, 1, 2].map(i => Math.max(...rows.map(r => r.m[i])));
+  for (const r of rows) {
+    const s = [0, 1, 2].reduce((acc, i) => acc + w[i] * (hi[i] > lo[i] ? (r.m[i] - lo[i]) / (hi[i] - lo[i]) : 0), 0);
+    r.score = Math.round(1000 * (1 - s / tw)) / 10;
+  }
+}
+function renderTop() {
+  const g = groups(false);
+  const outs = [], rets = [];
+  for (const [k, v] of g) (k.startsWith("ida|") ? outs : rets).push(...v.slice(0, 3));
+  const rows = [];
+  for (const o of outs) for (const r of rets) {
+    rows.push({ o, r, m: [o.p + r.p, o.tot + r.tot, o.cn.reduce((a, b) => a + b, 0) + r.cn.reduce((a, b) => a + b, 0)] });
+  }
+  const el = $("#top10");
+  $("#score-note").textContent = `Score de 0 a 100 (maior = melhor), combinando preço (peso ${C.pesos.preco}), ` +
+    `duração total (${C.pesos.duracao_total}) e tempo de conexão (${C.pesos.conexao}) entre todas as combinações ` +
+    `das 3 opções mais baratas de cada dia (o mesmo par de voos aparece no máximo 2 vezes). Pesos ajustáveis no config.yaml.`;
+  if (!rows.length) { el.innerHTML = `<p class="empty">Nenhuma combinação com os filtros atuais.</p>`; return; }
+  scoreRows(rows);
+  rows.sort((a, b) => b.score - a.score || a.m[0] - b.m[0]);
+  const conf = D.roundtrips;
+  const leg = (x, lbl) => {
+    const conn = x.cn.length ? `conexão ${x.cn.map(hm).join(", ")} (${esc(x.rt.split("-").slice(1, -1).join(", "))})` : "direto";
+    return `<div class="leg"><b>${lbl} ${dm(x.date)} · ${esc(x.aln || x.al)}</b>` +
+      `<div>${esc(x.fl)} · ${hhmm(x.dep)}→${hhmm(x.arr)} · ${hm(x.tot)} · ${conn}</div>` +
+      `<div>${money(x.p)} · <a href="${esc(x.url)}" target="_blank" rel="noopener">Google Flights ↗</a></div></div>`;
+  };
+  const perPair = {}, top = [];
+  for (const x of rows) {  // o mesmo par de voos entra no máximo 2 vezes, para variar
+    const k = x.o.fl + "|" + x.r.fl;
+    if ((perPair[k] = (perPair[k] || 0) + 1) <= 2) top.push(x);
+    if (top.length === 10) break;
+  }
+  el.innerHTML = top.map((x, i) => {
+    const c = conf.find(r => r.data_ida === x.o.date && r.voos_ida === x.o.fl && r.data_volta === x.r.date && r.voos_volta === x.r.fl && r.preco_idavolta_mesmos_voos);
+    const rt = c ? `<div>ida e volta conferida: <b>${money(Number(c.preco_idavolta_mesmos_voos))}</b> <a href="${esc(c.link)}" target="_blank" rel="noopener">↗</a></div>` : "";
+    return `<div class="card"><div class="rank">#${i + 1}<small>score ${x.score.toFixed(1)}</small></div>` +
+      leg(x.o, "Ida") + leg(x.r, "Volta") +
+      `<div class="money"><span class="big">${money(x.m[0])}</span><div>2 passagens separadas</div>${rt}` +
+      `<div>duração total ${hm(x.m[1])} · conexões ${hm(x.m[2])}</div></div></div>`;
+  }).join("");
+}
+
+// ---------- Etapa B ----------
+function renderRT() {
+  const rows = D.roundtrips;
+  if (!rows.length) { $("#rt-table").innerHTML = `<tr><td class="empty">Sem combinações conferidas nesta coleta.</td></tr>`; return; }
+  const n = v => v === "" || v == null ? null : Number(v);
+  $("#rt-table").innerHTML = `<tr><th>Ida</th><th>Voos ida</th><th>Volta</th><th>Voos volta</th><th class="num">Soma 2 trechos</th>` +
+    `<th class="num">Ida e volta, mesmos voos</th><th class="num">Melhor ida e volta</th><th>Volta da melhor</th><th class="num">Economia</th><th></th></tr>` +
+    rows.map(r => {
+      const sum = n(r.preco_soma_trechos), same = n(r.preco_idavolta_mesmos_voos), best = n(r.preco_idavolta_melhor);
+      const cheapest = Math.min(...[sum, same, best].filter(v => v != null));
+      const sav = sum != null && cheapest < sum ? `<span class="down">${money(sum - cheapest)}</span>` : `<span class="flat">—</span>`;
+      const star = r.destaque ? ` <span class="tag">★ ${esc(HLNAME[r.destaque] || r.destaque)}</span>` : "";
+      return `<tr><td>${dm(r.data_ida)}</td><td>${esc(r.voos_ida)}${star}</td><td>${dm(r.data_volta)}</td><td>${esc(r.voos_volta)}</td>` +
+        `<td class="num">${money(sum)}</td><td class="num">${money(same)}</td><td class="num">${money(best)}</td>` +
+        `<td>${esc(r.voos_volta_melhor)}</td><td class="num">${sav}</td>` +
+        `<td>${r.link ? `<a href="${esc(r.link)}" target="_blank" rel="noopener">↗</a>` : esc(r.erro)}</td></tr>`;
+    }).join("");
+}
+
+function renderStatic() {
+  $("#insights-list").innerHTML = (D.insights.length ? D.insights : ["Sem dados suficientes ainda."]).map(t => `<li>${esc(t)}</li>`).join("");
+  $("#deadline-legend").innerHTML = `· ● ida que chega até ${dm(C.deadline)}`;
+  $("#scale-bar").style.background = `linear-gradient(90deg, ${css("--good")}, ${css("--mid")}, ${css("--bad")})`;
+  $("#about").innerHTML = [
+    "Preços em " + esc(C.moeda) + " para 1 adulto em classe econômica, consultados no Google Flights. Podem mudar a qualquer momento; confirme sempre no link antes de comprar.",
+    "Cada busca traz as ~8 a 10 opções que o Google mostra primeiro, não a lista completa; companhias menos competitivas podem não aparecer em todos os dias.",
+    "A matriz e o Top 10 somam duas passagens só de ida. A seção \"Ida e volta conferida\" mostra o preço real da passagem única para as 20 combinações mais promissoras.",
+    "Os dados vêm de leitura automatizada do site do Google (não é uma API oficial): se o Google mudar a página, a coleta pode parar até o código ser ajustado.",
+    "Horários são locais de cada aeroporto. Duração total = da primeira decolagem ao último pouso.",
+  ].map(t => `<li>${t}</li>`).join("");
+  const errs = D.errors;
+  $("#err-summary").textContent = errs.length ? `Erros na última coleta (${errs.length} tentativas com erro)` : "Nenhum erro na última coleta";
+  $("#errors").innerHTML = errs.length ? `<tr><th>Etapa</th><th>Trecho</th><th>Data</th><th>Tentativa</th><th>Erro</th></tr>` +
+    errs.map(e => `<tr><td>${esc(e.etapa)}</td><td>${esc(e.direcao)}</td><td>${esc(e.data)}</td><td>${esc(e.tentativa)}</td><td>${esc(e.erro)}</td></tr>`).join("") : "";
+  $("#foot").textContent = `Página gerada em ${D.generated_at.replace("T", " ")} · ${H.days.length} dia(s) de histórico.`;
+}
+
+function renderAll() {
+  renderCalendars(); renderMatrix(); renderCompare(); renderTop(); renderTrend(); renderRT();
+}
+
+renderHeader();
+setupFilters();
+renderStatic();
+renderAll();
+addEventListener("resize", () => Object.values(charts).forEach(c => c.resize()));
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => { renderStatic(); renderAll(); });
+</script>
+</body>
+</html>

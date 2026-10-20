@@ -19,8 +19,10 @@ from . import config as config_mod
 
 MADRID = ZoneInfo("Europe/Madrid")
 RUNS = config_mod.ROOT / "data" / "runs"
+BUSCAS = config_mod.ROOT / "data" / "buscas"
+DOCS = config_mod.ROOT / "docs"
 TEMPLATE = Path(__file__).with_name("dashboard_template.html")
-OUT = config_mod.ROOT / "docs" / "index.html"
+INDEX_TEMPLATE = Path(__file__).with_name("buscas_template.html")
 WEEKDAYS = ["segunda", "terça", "quarta", "quinta", "sexta", "sábado", "domingo"]
 
 
@@ -35,9 +37,9 @@ def eur(v: float, moeda: str) -> str:
     return f"{v:,.0f}".replace(",", ".") + (" €" if moeda == "EUR" else f" {moeda}")
 
 
-def load_runs() -> list[dict]:
+def load_runs(base: Path) -> list[dict]:
     runs = []
-    for d in sorted(p for p in RUNS.iterdir() if p.is_dir()) if RUNS.exists() else []:
+    for d in sorted(p for p in base.iterdir() if p.is_dir()) if base.exists() else []:
         meta_path = d / "meta.json"
         if not meta_path.exists():
             continue
@@ -66,12 +68,52 @@ def option(row: dict, cfg) -> dict:
         "seg": [int(x) for x in row["trechos_min"].split("|") if x],
         "cn": [int(x) for x in row["conexoes_min"].split("|") if x],
         "tot": int(row["duracao_total_min"]), "dep": row["partida"], "arr": row["chegada"],
+        "lg": int(row["maior_trecho_min"]),
         "src": row["fonte"], "url": row["link"], "hl": classify(row, cfg),
     }
 
 
-def build(cfg) -> dict:
-    runs = load_runs()
+def dashboard_row(row: dict) -> bool:
+    """Válida pela configuração, ou descartada só pela regra de horas por voo
+    (essa regra é um filtro ajustável no dashboard)."""
+    if not row["preco"]:
+        return False
+    if row["valido"] == "1":
+        return True
+    return all(m.startswith("trecho ") for m in row["motivo"].split("; "))
+
+
+def rt_factors(runs: list[dict]) -> dict[str, dict]:
+    """Quanto a ida e volta custa em relação à soma dos trechos, por companhia.
+
+    Usa as combinações conferidas (mesmos voos, mesma companhia nos dois
+    sentidos) dos últimos 7 dias de coleta."""
+    ratios: dict[str, list[float]] = defaultdict(list)
+    for r in runs[-7:]:
+        for row in read_csv(r["dir"] / "roundtrip.csv"):
+            same, soma = row.get("preco_idavolta_mesmos_voos"), row.get("preco_soma_trechos")
+            if same and soma and row["companhias_ida"] == row["companhias_volta"]:
+                ratios[row["companhias_ida"]].append(float(same) / float(soma))
+    return {al: {"f": round(statistics.median(v), 3), "n": len(v)} for al, v in ratios.items()}
+
+
+def comparator_groups(options: list[dict], cfg) -> list[dict]:
+    """Séries do comparador: destaques com dados; se não houver, as 2 companhias mais presentes."""
+    groups = [{"id": h.id, "nome": h.nome, "hl": h.id} for h in cfg.destaques
+              if any(o["hl"] == h.id for o in options)]
+    if not groups:
+        count = defaultdict(set)
+        for o in options:
+            if "+" not in o["al"]:
+                count[o["al"]].add((o["d"], o["date"]))
+        names = {o["al"]: o["aln"] for o in options if "+" not in o["al"]}
+        for al in sorted(count, key=lambda a: -len(count[a]))[:2]:
+            groups.append({"id": al, "nome": names.get(al, al), "al": al})
+    return groups
+
+
+def build(cfg, base: Path, title: str, links: dict) -> dict:
+    runs = load_runs(base)
     ok_runs = [r for r in runs if r.get("itinerarios_validos") and not r.get("poc")]
     latest = ok_runs[-1] if ok_runs else None
     last_attempt = runs[-1] if runs else None
@@ -80,8 +122,7 @@ def build(cfg) -> dict:
     roundtrips = []
     errors = []
     if latest:
-        options = [option(r, cfg) for r in read_csv(latest["dir"] / "oneway.csv")
-                   if r["valido"] == "1" and r["preco"]]
+        options = [option(r, cfg) for r in read_csv(latest["dir"] / "oneway.csv") if dashboard_row(r)]
         roundtrips = read_csv(latest["dir"] / "roundtrip.csv")
     if last_attempt:
         errors = read_csv(last_attempt["dir"] / "errors.csv")
@@ -104,24 +145,31 @@ def build(cfg) -> dict:
         for k, v in mins.items():
             series[k][i] = v
 
+    valid_opts = [o for o in options if o["lg"] <= cfg.max_min_por_trecho]
     return {
+        "title": title,
+        "links": links,
         "generated_at": datetime.now(MADRID).isoformat(timespec="minutes"),
         "last_attempt": _meta(last_attempt),
         "latest": _meta(latest),
         "config": {
             "moeda": cfg.moeda, "origem": cfg.origem, "destino": cfg.destino,
-            "aeroportos_destino": cfg.aeroportos_destino,
+            "aeroportos_origem": cfg.aeroportos_origem, "aeroportos_destino": cfg.aeroportos_destino,
+            "adultos": cfg.adultos, "classe": cfg.classe,
             "ida": [cfg.ida[0].isoformat(), cfg.ida[1].isoformat()],
-            "volta": [cfg.volta[0].isoformat(), cfg.volta[1].isoformat()],
-            "deadline": cfg.data_limite_chegada.isoformat(), "pesos": cfg.pesos,
+            "volta": [cfg.volta[0].isoformat(), cfg.volta[1].isoformat()] if cfg.volta else None,
+            "deadline": cfg.data_limite_chegada.isoformat() if cfg.data_limite_chegada else None,
+            "pesos": cfg.pesos,
             "max_escalas": cfg.max_escalas, "max_horas_trecho": cfg.max_min_por_trecho / 60,
             "destaques": [{"id": h.id, "nome": h.nome} for h in cfg.destaques],
         },
         "options": options,
         "roundtrips": roundtrips,
+        "rt_factors": rt_factors(ok_runs),
+        "groups": comparator_groups(options, cfg),
         "errors": [{k: e[k] for k in ("etapa", "direcao", "data", "tentativa", "erro")} for e in errors][-50:],
         "history": {"days": days, "series": dict(series)},
-        "insights": insights(options, roundtrips, series, days, cfg),
+        "insights": insights(valid_opts, roundtrips, series, days, cfg),
     }
 
 
@@ -212,17 +260,50 @@ def _br(iso: str) -> str:
     return f"{d.day:02d}/{d.month:02d}"
 
 
-def main() -> int:
-    cfg = config_mod.load()
-    data = build(cfg)
+def render(data: dict, out: Path) -> None:
     html = TEMPLATE.read_text(encoding="utf-8")
     payload = json.dumps(data, ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/")
-    html = html.replace("/*__DATA__*/null", payload)
-    OUT.parent.mkdir(parents=True, exist_ok=True)
-    OUT.write_text(html, encoding="utf-8")
-    (OUT.parent / ".nojekyll").write_text("", encoding="utf-8")
-    print(f"Dashboard gerado: {OUT} ({len(data['options'])} opções, "
-          f"{len(data['history']['days'])} dia(s) de histórico)")
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(html.replace("/*__DATA__*/null", payload), encoding="utf-8")
+
+
+def search_title(cfg) -> str:
+    t = f"{cfg.origem} → {cfg.destino}" + (f" → {cfg.origem}" if cfg.volta else " (só ida)")
+    d = f"ida {_br(cfg.ida[0].isoformat())}–{_br(cfg.ida[1].isoformat())}"
+    if cfg.volta:
+        d += f", volta {_br(cfg.volta[0].isoformat())}–{_br(cfg.volta[1].isoformat())}"
+    return f"{t} · {d}"
+
+
+def main() -> int:
+    cfg = config_mod.load()
+    data = build(cfg, RUNS, "Passagens Barcelona ↔ São Paulo", {"buscas": "buscas/"})
+    render(data, DOCS / "index.html")
+    (DOCS / ".nojekyll").write_text("", encoding="utf-8")
+    print(f"Dashboard principal: {len(data['options'])} opções, {len(data['history']['days'])} dia(s)")
+
+    entries = []
+    for folder in sorted(BUSCAS.iterdir()) if BUSCAS.exists() else []:
+        spec = folder / "busca.json"
+        if not spec.exists():
+            continue
+        bcfg = config_mod.from_dict(json.loads(spec.read_text(encoding="utf-8")))
+        title = search_title(bcfg)
+        bdata = build(bcfg, folder, title, {"principal": "../../", "buscas": "../"})
+        render(bdata, DOCS / "buscas" / folder.name / "index.html")
+        latest = bdata["latest"] or bdata["last_attempt"] or {}
+        best = min((o["p"] for o in bdata["options"]), default=None)
+        entries.append({
+            "slug": folder.name, "title": title, "adultos": bcfg.adultos, "classe": bcfg.classe,
+            "moeda": bcfg.moeda, "atualizado": latest.get("fim"), "opcoes": len(bdata["options"]),
+            "min": best, "ok": bool(bdata["latest"]),
+        })
+        print(f"Busca {folder.name}: {len(bdata['options'])} opções")
+    entries.sort(key=lambda e: e["atualizado"] or "", reverse=True)
+    idx = INDEX_TEMPLATE.read_text(encoding="utf-8").replace(
+        "/*__DATA__*/null", json.dumps(entries, ensure_ascii=False).replace("</", "<\\/"))
+    (DOCS / "buscas").mkdir(parents=True, exist_ok=True)
+    (DOCS / "buscas" / "index.html").write_text(idx, encoding="utf-8")
     return 0
 
 

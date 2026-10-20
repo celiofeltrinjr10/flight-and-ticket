@@ -24,9 +24,9 @@ def evaluate(it: Itinerary, cfg: Config) -> Itinerary:
                 f"(máx. {fmt_min(cfg.max_min_por_trecho)})"
             )
     partida_ok, chegada_ok = cfg.aeroportos(it.direction)
-    if it.segments[0].origin not in partida_ok:
+    if partida_ok and it.segments[0].origin not in partida_ok:
         motivos.append(f"parte de {it.segments[0].origin}")
-    if it.segments[-1].dest not in chegada_ok:
+    if chegada_ok and it.segments[-1].dest not in chegada_ok:
         motivos.append(f"chega em {it.segments[-1].dest}")
     it.valid = not motivos
     it.reason = "; ".join(motivos)

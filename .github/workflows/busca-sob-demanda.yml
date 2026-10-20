@@ -1,0 +1,112 @@
+name: Busca sob demanda
+
+# Actions → "Busca sob demanda" → Run workflow → preencha e confirme.
+# O resultado aparece em https://<usuário>.github.io/voos-bcn-sp/buscas/
+
+on:
+  workflow_dispatch:
+    inputs:
+      origem:
+        description: "Origem (3 letras: aeroporto como BCN ou cidade como LON, PAR, MIL)"
+        required: true
+        default: BCN
+      destino:
+        description: "Destino (3 letras: GRU ou cidade como SAO, RIO, NYC)"
+        required: true
+        default: SAO
+      ida:
+        description: "Ida: uma data (2026-11-10) ou intervalo (2026-11-01 a 2026-11-15)"
+        required: true
+      volta:
+        description: "Volta: data ou intervalo. Deixe vazio para só ida"
+        required: false
+        default: ""
+      adultos:
+        description: "Adultos"
+        required: true
+        default: "1"
+      classe:
+        description: "Classe"
+        type: choice
+        options: [economy, premium-economy, business, first]
+        default: economy
+      max_escalas:
+        description: "Máximo de escalas"
+        type: choice
+        options: ["0", "1", "2"]
+        default: "1"
+      moeda:
+        description: "Moeda (EUR, BRL, USD…)"
+        required: true
+        default: EUR
+      data_limite:
+        description: "Data-limite de chegada da ida (opcional)"
+        required: false
+        default: ""
+
+permissions:
+  contents: write
+
+concurrency:
+  group: coleta
+  cancel-in-progress: false
+
+jobs:
+  busca:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Instalar dependências
+        run: |
+          pip install -r requirements.txt
+          python -m playwright install --with-deps chromium
+
+      - name: Buscar
+        id: busca
+        continue-on-error: true
+        env:
+          SERPAPI_KEY: ${{ secrets.SERPAPI_KEY }}
+          IN_ORIGEM: ${{ inputs.origem }}
+          IN_DESTINO: ${{ inputs.destino }}
+          IN_IDA: ${{ inputs.ida }}
+          IN_VOLTA: ${{ inputs.volta }}
+          IN_ADULTOS: ${{ inputs.adultos }}
+          IN_CLASSE: ${{ inputs.classe }}
+          IN_ESCALAS: ${{ inputs.max_escalas }}
+          IN_MOEDA: ${{ inputs.moeda }}
+          IN_LIMITE: ${{ inputs.data_limite }}
+        run: >
+          python -m tracker.collect --busca
+          --origem "$IN_ORIGEM" --destino "$IN_DESTINO"
+          --ida "$IN_IDA" --volta "$IN_VOLTA"
+          --adultos "$IN_ADULTOS" --classe "$IN_CLASSE"
+          --max-escalas "$IN_ESCALAS" --moeda "$IN_MOEDA"
+          --data-limite "$IN_LIMITE"
+
+      - name: Gerar páginas
+        run: python -m tracker.build_dashboard
+
+      - name: Salvar no repositório
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data docs
+          git commit -m "Busca $IN_ORIGEM-$IN_DESTINO $(TZ=Europe/Madrid date +'%Y-%m-%d %H:%M')" || echo "Nada novo"
+          git pull --rebase
+          git push
+        env:
+          IN_ORIGEM: ${{ inputs.origem }}
+          IN_DESTINO: ${{ inputs.destino }}
+
+      - name: Avisar se a busca falhou
+        if: steps.busca.outcome == 'failure'
+        run: |
+          echo "::error::A busca falhou. Veja o log do passo 'Buscar' (formato das datas/códigos?)"
+          exit 1
