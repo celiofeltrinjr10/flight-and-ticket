@@ -21,6 +21,8 @@ MADRID = ZoneInfo("Europe/Madrid")
 RUNS = config_mod.ROOT / "data" / "runs"
 BUSCAS = config_mod.ROOT / "data" / "buscas"
 DOCS = config_mod.ROOT / "docs"
+PUBLIC = config_mod.ROOT / "data" / "public"   # JSON lido pelo site (Vercel)
+WEB_TEMPLATE = config_mod.ROOT / "web" / "painel.html"  # cópia do template usada pelo site
 TEMPLATE = Path(__file__).with_name("dashboard_template.html")
 INDEX_TEMPLATE = Path(__file__).with_name("buscas_template.html")
 WEEKDAYS = ["segunda", "terça", "quarta", "quinta", "sexta", "sábado", "domingo"]
@@ -260,6 +262,11 @@ def _br(iso: str) -> str:
     return f"{d.day:02d}/{d.month:02d}"
 
 
+def write_json(data, out: Path) -> None:
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(json.dumps(data, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
+
+
 def render(data: dict, out: Path) -> None:
     html = TEMPLATE.read_text(encoding="utf-8")
     payload = json.dumps(data, ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/")
@@ -278,6 +285,9 @@ def main() -> int:
     cfg = config_mod.load()
     data = build(cfg, RUNS, "Passagens Barcelona ↔ São Paulo", {"buscas": "buscas/"})
     render(data, DOCS / "index.html")
+    write_json(data, PUBLIC / "rotas" / "principal.json")
+    if WEB_TEMPLATE.parent.exists():
+        WEB_TEMPLATE.write_text(TEMPLATE.read_text(encoding="utf-8"), encoding="utf-8")
     (DOCS / ".nojekyll").write_text("", encoding="utf-8")
     print(f"Dashboard principal: {len(data['options'])} opções, {len(data['history']['days'])} dia(s)")
 
@@ -290,6 +300,7 @@ def main() -> int:
         title = search_title(bcfg)
         bdata = build(bcfg, folder, title, {"principal": "../../", "buscas": "../"})
         render(bdata, DOCS / "buscas" / folder.name / "index.html")
+        write_json(bdata, PUBLIC / "buscas" / f"{folder.name}.json")
         latest = bdata["latest"] or bdata["last_attempt"] or {}
         best = min((o["p"] for o in bdata["options"]), default=None)
         entries.append({
@@ -303,6 +314,13 @@ def main() -> int:
         "/*__DATA__*/null", json.dumps(entries, ensure_ascii=False).replace("</", "<\\/"))
     (DOCS / "buscas").mkdir(parents=True, exist_ok=True)
     (DOCS / "buscas" / "index.html").write_text(idx, encoding="utf-8")
+    best_main = min((o["p"] for o in data["options"] if o["d"] == "ida"), default=None)
+    write_json({
+        "principal": {"title": data["title"], "atualizado": (data["latest"] or {}).get("fim"),
+                      "ida": data["config"]["ida"], "volta": data["config"]["volta"],
+                      "min_ida": best_main, "moeda": data["config"]["moeda"]},
+        "buscas": entries,
+    }, PUBLIC / "index.json")
     return 0
 
 

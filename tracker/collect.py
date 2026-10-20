@@ -12,6 +12,7 @@ sobrescreve): oneway.csv, roundtrip.csv, errors.csv e meta.json.
 from __future__ import annotations
 
 import argparse
+import re
 import csv
 import json
 import random
@@ -272,12 +273,17 @@ def main(argv: list[str] | None = None) -> int:
     g.add_argument("--max-escalas", type=int)
     g.add_argument("--moeda")
     g.add_argument("--data-limite", default="", help="data-limite de chegada da ida (opcional)")
+    g.add_argument("--slug", default="", help="identificador da busca (o site manda o seu)")
     args = ap.parse_args(argv)
 
     today = datetime.now(MADRID).date()
     if args.busca:
         try:
             raw, slug = busca.build_raw(config_mod.load(args.config).raw, args)
+            if args.slug:
+                if not re.fullmatch(r"[A-Za-z0-9_-]{3,120}", args.slug):
+                    raise ValueError("slug inválido")
+                slug = args.slug
         except ValueError as e:
             log(f"ERRO no formulário: {e}")
             return 2

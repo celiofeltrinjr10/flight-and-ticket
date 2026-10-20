@@ -342,6 +342,7 @@ function renderHeader() {
   const when = s => new Date(s).toLocaleString("pt-BR", { timeZone: "Europe/Madrid", day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
   $("#updated").textContent = L ? `atualizado ${when(L.fim)}` : "sem coleta ainda";
   const links = [];
+  if (D.links.inicio) links.push(`<a href="${D.links.inicio}">← Nova busca</a>`);
   if (D.links.principal) links.push(`<a href="${D.links.principal}">← Acompanhamento diário</a>`);
   if (D.links.buscas) links.push(`<a href="${D.links.buscas}">Buscas sob demanda</a>`);
   $("#nav").innerHTML = links.join(" · ");
