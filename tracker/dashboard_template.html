@@ -5,36 +5,40 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Passagens aéreas</title>
 <meta name="description" content="Preços diários de passagens com até 1 escala, ida e volta conferida e histórico.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@600;700&display=swap">
 <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.1/dist/echarts.min.js"></script>
 <style>
 :root {
   color-scheme: light;
-  --bg: #f7f7f5; --surface: #ffffff; --surface-2: #f3f2ef; --border: #e4e3de; --border-strong: #cfcdc6;
-  --text: #0b0b0b; --text-2: #52514e; --muted: #85847e; --accent: #2a78d6; --accent-bg: #e3eefb;
+  --bg: #F3EFE6; --surface: #FFFDF8; --surface-2: #EDE7DA; --border: #DDD5C4; --border-strong: #C9BFAA;
+  --text: #121A2B; --text-2: #46506A; --muted: #5F6577; --accent: #2449B8; --accent-bg: #E3E8F7;
   --s1: #2a78d6; --s2: #eb6834; --s3: #1baf7a;
-  --good: #a6dcb8; --mid: #efeee9; --bad: #f4b0ab; --cell-ink: #1a1a19; --empty: #f1f0ec;
-  --up: #b42318; --down: #08783e;
+  --good: #BFE3CC; --mid: #FFFDF8; --bad: #F2C6B8; --cell-ink: #121A2B; --empty: #EDE7DA;
+  --up: #B4361E; --down: #13734A; --sinal: #FFC629; --on-sinal: #121A2B; --painel: #121A2B; --on-painel: #F3EFE6;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     color-scheme: dark;
-    --bg: #121211; --surface: #1a1a19; --surface-2: #232321; --border: #33332f; --border-strong: #4a4a45;
-    --text: #f0efec; --text-2: #c3c2b7; --muted: #8f8e86; --accent: #5b9cea; --accent-bg: #1c2d44;
+    --bg: #0A0F1C; --surface: #121A2B; --surface-2: #18223A; --border: #26324A; --border-strong: #34425F;
+    --text: #F3EFE6; --text-2: #B8BFD0; --muted: #8C95AB; --accent: #8FB0FF; --accent-bg: #1B2A4D;
     --s1: #3987e5; --s2: #d95926; --s3: #199e70;
-    --good: #1d6542; --mid: #2c2c29; --bad: #7c302d; --cell-ink: #f0efec; --empty: #1f1f1d;
-    --up: #f97066; --down: #47cd89;
+    --good: #1E5A3F; --mid: #18223A; --bad: #5A2A22; --cell-ink: #F3EFE6; --empty: #121A2B;
+    --up: #FF7A59; --down: #4CC38A; --painel: #03060D;
   }
 }
 :root[data-theme="dark"] {
   color-scheme: dark;
-  --bg: #121211; --surface: #1a1a19; --surface-2: #232321; --border: #33332f; --border-strong: #4a4a45;
-  --text: #f0efec; --text-2: #c3c2b7; --muted: #8f8e86; --accent: #5b9cea; --accent-bg: #1c2d44;
+  --bg: #0A0F1C; --surface: #121A2B; --surface-2: #18223A; --border: #26324A; --border-strong: #34425F;
+  --text: #F3EFE6; --text-2: #B8BFD0; --muted: #8C95AB; --accent: #8FB0FF; --accent-bg: #1B2A4D;
   --s1: #3987e5; --s2: #d95926; --s3: #199e70;
-  --good: #1d6542; --mid: #2c2c29; --bad: #7c302d; --cell-ink: #f0efec; --empty: #1f1f1d;
-  --up: #f97066; --down: #47cd89;
+  --good: #1E5A3F; --mid: #18223A; --bad: #5A2A22; --cell-ink: #F3EFE6; --empty: #121A2B;
+  --up: #FF7A59; --down: #4CC38A; --painel: #03060D;
 }
 * { box-sizing: border-box; }
-body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.5 "Barlow", "Segoe UI", Roboto, system-ui, sans-serif; }
+.cond, h1, .sec h2, .card .price, .cell .pr, .list .money b, .opt .l1 b { font-family: "Barlow Condensed", "Roboto Condensed", "Arial Narrow", sans-serif; font-variant-numeric: tabular-nums; }
 a { color: var(--accent); text-decoration: none; }
 a:hover { text-decoration: underline; }
 .wrap { max-width: 980px; margin: 0 auto; padding: 0 16px; }
@@ -49,12 +53,12 @@ h1 { font-size: 1.3rem; font-weight: 600; margin: 0; }
 .label { color: var(--text-2); font-size: .8rem; margin: 14px 0 6px; }
 .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); gap: 10px; }
 .card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 14px 16px; }
-.card.best { border: 2px solid var(--accent); }
+.card.best { border: 2px solid var(--sinal); box-shadow: 0 4px 16px rgba(18,26,43,.08); }
 .card .row1 { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
 .card .name { font-weight: 600; }
-.pill { background: var(--accent-bg); color: var(--accent); font-size: .72rem; padding: 2px 8px; border-radius: 8px; white-space: nowrap; }
+.pill { background: var(--sinal); color: var(--on-sinal); font-weight: 600; font-size: .72rem; padding: 2px 8px; border-radius: 8px; white-space: nowrap; }
 .card .sub { color: var(--text-2); font-size: .85rem; }
-.card .price { font-size: 1.6rem; font-weight: 600; margin-top: 6px; }
+.card .price { font-size: 2.4rem; font-weight: 700; margin-top: 6px; line-height: 1.1; }
 .card .price small { font-size: .85rem; font-weight: 400; color: var(--text-2); margin-left: 6px; }
 .card .note { color: var(--muted); font-size: .8rem; }
 .card .go { margin-top: 8px; font-size: .82rem; display: inline-block; }
@@ -88,7 +92,7 @@ input[type=range] { width: 100%; accent-color: var(--accent); }
 .cell { border: 0; border-radius: 7px; min-height: 44px; font: inherit; color: var(--cell-ink); cursor: pointer;
   display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.15; padding: 4px 0; }
 .cell .dn { font-size: .66rem; opacity: .75; }
-.cell .pr { font-size: .8rem; font-weight: 600; }
+.cell .pr { font-size: .95rem; font-weight: 700; }
 .cell.off { background: transparent; cursor: default; }
 .cell.none { background: var(--empty); color: var(--muted); cursor: default; }
 .cell.sel { outline: 2px solid var(--text); outline-offset: 1px; }
@@ -132,8 +136,10 @@ ul.plain li { margin: 4px 0; }
 .sec.more details { padding: 8px 0; border-bottom: 1px solid var(--border); }
 details summary { cursor: pointer; color: var(--text-2); font-size: .88rem; }
 details[open] summary { margin-bottom: 8px; }
-.verdict { margin-top: 10px; font-size: .85rem; color: var(--text-2); background: var(--surface); border: 1px dashed var(--border-strong); border-radius: 12px; padding: 10px 14px; }
-.verdict b { color: var(--text); }
+.verdict { margin-top: 10px; font-size: .88rem; color: #B8BFD0; background: var(--painel); border-radius: 12px; padding: 12px 14px; }
+.verdict b { color: var(--sinal); }
+.partial { margin: 0 0 10px; font-size: .88rem; background: var(--sinal); color: var(--on-sinal); border-radius: 12px; padding: 10px 14px; }
+
 .bar { position: sticky; top: 0; z-index: 30; background: var(--bg); padding: 10px 0; margin: 14px 0 0; border-bottom: 1px solid var(--border); flex-wrap: nowrap; }
 #f-summary { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 #jump { flex: none; font-size: .82rem; max-width: 130px; }
@@ -155,6 +161,7 @@ footer { color: var(--muted); font-size: .75rem; padding: 10px 0 40px; }
 
   <section class="sec" id="s-compra">
     <h2>Melhor compra hoje</h2>
+    <div class="partial" id="partial" hidden>Conferindo ida e volta juntas… Por enquanto os preços somam 2 passagens. Atualize em alguns minutos.</div>
     <div class="cards" id="cards"></div>
     <div class="verdict" id="verdict"></div>
   </section>
@@ -356,6 +363,7 @@ function renderHeader() {
   }
   if (D.errors.length) lines.push(`Erros na última coleta: ${D.errors.slice(0, 5).map(e => esc(`${e.direcao} ${e.data}: ${e.erro}`)).join("; ")}${D.errors.length > 5 ? "…" : ""}`);
   $("#info").innerHTML = lines.join("<br>");
+  $("#partial").hidden = !(L && L.etapas === "A" && HAS_RET);
   if (L && (L.falhas > 0 || (A && A.run_id !== L.run_id))) $("#updated").innerHTML += ` <span class="warn">· ver avisos</span>`;
   $("#info-btn").onclick = () => { const i = $("#info"); i.hidden = !i.hidden; $("#info-btn").setAttribute("aria-expanded", !i.hidden); };
 }

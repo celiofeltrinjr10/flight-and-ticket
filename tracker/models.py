@@ -67,6 +67,27 @@ class Itinerary:
     def longest_segment_min(self) -> int:
         return max(s.duration_min for s in self.segments)
 
+    def to_dict(self) -> dict:
+        d = {k: getattr(self, k) for k in (
+            "direction", "layovers_min", "total_min", "price", "currency", "source", "link",
+            "airline_names", "valid", "reason")}
+        d["date"] = self.date.isoformat()
+        d["queried_at"] = self.queried_at.isoformat()
+        d["segments"] = [{**s.__dict__, "departure": s.departure.isoformat(), "arrival": s.arrival.isoformat()}
+                         for s in self.segments]
+        return d
+
+    @classmethod
+    def from_dict(cls, d: dict) -> "Itinerary":
+        segs = [Segment(**{**s, "departure": datetime.fromisoformat(s["departure"]),
+                           "arrival": datetime.fromisoformat(s["arrival"])}) for s in d["segments"]]
+        return cls(
+            direction=d["direction"], date=date.fromisoformat(d["date"]), segments=segs,
+            layovers_min=d["layovers_min"], total_min=d["total_min"], price=d["price"],
+            currency=d["currency"], source=d["source"], queried_at=datetime.fromisoformat(d["queried_at"]),
+            link=d["link"], airline_names=d["airline_names"], valid=d["valid"], reason=d["reason"],
+        )
+
 
 CSV_FIELDS = [
     "run_id", "consultado_em", "fonte", "direcao", "data", "companhias", "companhias_nomes",

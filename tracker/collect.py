@@ -26,7 +26,7 @@ from zoneinfo import ZoneInfo
 from . import busca
 from . import config as config_mod
 from .filters import evaluate, fmt_min
-from .gflights import Blocked
+from .gflights import Blocked, NoResults
 from .models import CSV_FIELDS, Itinerary, to_row
 from .providers import Provider, get_provider
 from .scoring import combo_metrics, score
@@ -86,8 +86,8 @@ class Runner:
                     "data": day.isoformat(), "tentativa": attempt, "erro": msg[:500],
                 })
                 log(f"  ! {etapa} {direction} {day} tentativa {attempt}/{cfg.tentativas}: {msg[:160]}")
-                if "não definida" in msg or "não implementada" in msg:
-                    break  # erro de configuração: repetir não adianta
+                if "não definida" in msg or "não implementada" in msg or isinstance(e, NoResults):
+                    break  # repetir não adianta (configuração ou combinação sem resultado)
                 if attempt < cfg.tentativas:
                     wait = cfg.espera_base_s * 3 ** (attempt - 1) * (2 if isinstance(e, Blocked) else 1)
                     time.sleep(wait + random.uniform(0, 3))
@@ -144,7 +144,8 @@ class Runner:
                 if hx:
                     chosen.setdefault(hx.flights, hx)
             cands[direction].extend(chosen.values())
-        combos = [(o, r) for o in cands["ida"] for r in cands["volta"]]
+        combos = [(o, r) for o in cands["ida"] for r in cands["volta"]
+                  if not cfg.somente_mesma_cia or o.airlines == r.airlines]
         if not combos:
             return []
         scores = score([combo_metrics(o, r) for o, r in combos], cfg.pesos)
@@ -228,6 +229,32 @@ def write_csv(path: Path, fields: list[str], rows: list[dict]) -> None:
         w.writerows(rows)
 
 
+def last_partial_run(base: Path) -> Path | None:
+    """Última execução que parou depois da etapa A (para a etapa B continuar)."""
+    for d in sorted((p for p in base.iterdir() if p.is_dir()), reverse=True) if base.exists() else []:
+        meta = d / "meta.json"
+        if meta.exists() and (d / "itinerarios.json").exists():
+            if json.loads(meta.read_text(encoding="utf-8")).get("etapas") == "A":
+                return d
+            return None
+    return None
+
+
+def save_itineraries(its: list[Itinerary], path: Path) -> None:
+    path.write_text(json.dumps([it.to_dict() for it in its], ensure_ascii=False), encoding="utf-8")
+
+
+def load_itineraries(path: Path) -> list[Itinerary]:
+    return [Itinerary.from_dict(d) for d in json.loads(path.read_text(encoding="utf-8"))]
+
+
+def read_errors(path: Path) -> list[dict]:
+    if not path.exists():
+        return []
+    with path.open(encoding="utf-8", newline="") as f:
+        return list(csv.DictReader(f))
+
+
 def new_run_dir(base: Path) -> tuple[str, Path]:
     run_id = datetime.now(MADRID).strftime("%Y-%m-%d_%H%M")
     path, n = base / run_id, 1
@@ -260,7 +287,8 @@ def print_poc(its: list[Itinerary], rt_rows: list[dict], cfg) -> None:
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--poc", action="store_true", help="prova de conceito com poucas datas")
-    ap.add_argument("--etapa", choices=["A", "AB"], default="AB")
+    ap.add_argument("--etapa", choices=["A", "B", "AB"], default="AB",
+                    help="A = só trechos de ida; B = continua a última execução que parou na etapa A")
     ap.add_argument("--config", default=None)
     g = ap.add_argument_group("busca sob demanda (grava em data/buscas/)")
     g.add_argument("--busca", action="store_true", help="busca avulsa com os parâmetros abaixo")
@@ -309,16 +337,33 @@ def main(argv: list[str] | None = None) -> int:
         base = config_mod.ROOT / "data" / "runs"
     days = {d: [x for x in v if x >= today] for d, v in days.items()}
 
-    run_id, out_dir = new_run_dir(base)
-    started = datetime.now(timezone.utc)
-    log(f"Execução {run_id} -> {out_dir}")
+    if args.etapa == "B":
+        out_dir = last_partial_run(base)
+        if out_dir is None:
+            log("ERRO: não há execução parada na etapa A para continuar.")
+            return 2
+        run_id = out_dir.name
+        meta_prev = json.loads((out_dir / "meta.json").read_text(encoding="utf-8"))
+        started = datetime.fromisoformat(meta_prev["inicio"])
+    else:
+        run_id, out_dir = new_run_dir(base)
+        started = datetime.now(timezone.utc)
+        meta_prev = {}
+    log(f"Execução {run_id} -> {out_dir} (etapa {args.etapa})")
     runner = Runner(cfg, out_dir, run_id)
     its: list[Itinerary] = []
     rt_rows: list[dict] = []
     fatal = ""
     try:
-        its = runner.stage_a(days)
-        write_csv(out_dir / "oneway.csv", CSV_FIELDS, [to_row(it, run_id) for it in its])
+        if args.etapa == "B":
+            its = load_itineraries(out_dir / "itinerarios.json")
+            runner.searches = meta_prev.get("buscas", 0)
+            runner.failures = meta_prev.get("falhas", 0)
+            runner.errors = read_errors(out_dir / "errors.csv")
+        else:
+            its = runner.stage_a(days)
+            write_csv(out_dir / "oneway.csv", CSV_FIELDS, [to_row(it, run_id) for it in its])
+            save_itineraries(its, out_dir / "itinerarios.json")
         if "B" in args.etapa and cfg.volta:
             rt_rows = runner.stage_b(its)
             write_csv(out_dir / "roundtrip.csv", RT_FIELDS, rt_rows)
@@ -328,10 +373,11 @@ def main(argv: list[str] | None = None) -> int:
     finally:
         runner.close()
         write_csv(out_dir / "errors.csv", ERR_FIELDS, runner.errors)
+        etapas = "A" if args.etapa == "A" and cfg.volta else "AB"
         meta = {
             "run_id": run_id, "inicio": started.isoformat(timespec="seconds"),
             "fim": datetime.now(timezone.utc).isoformat(timespec="seconds"),
-            "poc": args.poc, "etapas": args.etapa,
+            "poc": args.poc, "etapas": etapas,
             "fontes": {"etapa_a": cfg.fonte_a, "etapa_a_reserva": cfg.fonte_a_reserva, "etapa_b": cfg.fonte_b},
             "buscas": runner.searches, "falhas": runner.failures, "tentativas_com_erro": len(runner.errors),
             "itinerarios": len(its), "itinerarios_validos": sum(it.valid for it in its),

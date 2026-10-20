@@ -274,6 +274,31 @@ def render(data: dict, out: Path) -> None:
     out.write_text(html.replace("/*__DATA__*/null", payload), encoding="utf-8")
 
 
+def best_final(data: dict) -> dict:
+    """Preço final da viagem: o menor entre ida e volta conferida e a soma dos dois trechos mais
+    baratos (só voos dentro do limite de horas padrão). Viagem só de ida: o trecho mais barato."""
+    lim = data["config"]["max_horas_trecho"] * 60
+    opts = [o for o in data["options"] if o["lg"] <= lim]
+    ida = min((o["p"] for o in opts if o["d"] == "ida"), default=None)
+    if not data["config"]["volta"]:
+        return {"preco": ida, "tipo": "so_ida"}
+    volta = min((o["p"] for o in opts if o["d"] == "volta"), default=None)
+    cands = []
+    if ida is not None and volta is not None:
+        cands.append((ida + volta, "2_passagens"))
+    # Só conta ida e volta conferida quando os dois voos estão entre as opções mostradas na página,
+    # para a home e a página da viagem mostrarem sempre o mesmo preço.
+    shown = {(o["d"], o["date"], o["fl"]) for o in opts}
+    for r in data["roundtrips"]:
+        for k, ret in (("preco_idavolta_mesmos_voos", r.get("voos_volta")), ("preco_idavolta_melhor", r.get("voos_volta_melhor"))):
+            if r.get(k) and ("ida", r["data_ida"], r["voos_ida"]) in shown and ("volta", r["data_volta"], ret) in shown:
+                cands.append((float(r[k]), "conferido"))
+    if not cands:
+        return {"preco": None, "tipo": None}
+    preco, tipo = min(cands)
+    return {"preco": preco, "tipo": tipo}
+
+
 def search_title(cfg) -> str:
     t = f"{cfg.origem} → {cfg.destino}" + (f" → {cfg.origem}" if cfg.volta else " (só ida)")
     rng = lambda r: _br(r[0].isoformat()) + ("" if r[0] == r[1] else f"–{_br(r[1].isoformat())}")
@@ -302,11 +327,12 @@ def main() -> int:
         render(bdata, DOCS / "buscas" / folder.name / "index.html")
         write_json(bdata, PUBLIC / "buscas" / f"{folder.name}.json")
         latest = bdata["latest"] or bdata["last_attempt"] or {}
-        best = min((o["p"] for o in bdata["options"]), default=None)
+        final = best_final(bdata)
         entries.append({
             "slug": folder.name, "title": title, "adultos": bcfg.adultos, "classe": bcfg.classe,
             "moeda": bcfg.moeda, "atualizado": latest.get("fim"), "opcoes": len(bdata["options"]),
-            "min": best, "ok": bool(bdata["latest"]),
+            "min": final["preco"], "tipo": final["tipo"], "ok": bool(bdata["latest"]),
+            "parcial": (bdata["latest"] or {}).get("etapas") == "A",
         })
         print(f"Busca {folder.name}: {len(bdata['options'])} opções")
     entries.sort(key=lambda e: e["atualizado"] or "", reverse=True)
@@ -314,11 +340,11 @@ def main() -> int:
         "/*__DATA__*/null", json.dumps(entries, ensure_ascii=False).replace("</", "<\\/"))
     (DOCS / "buscas").mkdir(parents=True, exist_ok=True)
     (DOCS / "buscas" / "index.html").write_text(idx, encoding="utf-8")
-    best_main = min((o["p"] for o in data["options"] if o["d"] == "ida"), default=None)
+    final_main = best_final(data)
     write_json({
         "principal": {"title": data["title"], "atualizado": (data["latest"] or {}).get("fim"),
                       "ida": data["config"]["ida"], "volta": data["config"]["volta"],
-                      "min_ida": best_main, "moeda": data["config"]["moeda"]},
+                      "min": final_main["preco"], "tipo": final_main["tipo"], "moeda": data["config"]["moeda"]},
         "buscas": entries,
     }, PUBLIC / "index.json")
     return 0
