@@ -1,0 +1,5 @@
+run_id,quando,etapa,fonte,direcao,data,tentativa,erro
+2026-10-21_1315,2026-10-21T11:31:43+00:00,B,google_browser,idavolta,2026-12-01,1,ProviderError: a página de ida e volta não carregou resultados
+2026-10-21_1315,2026-10-21T11:32:55+00:00,B,google_browser,idavolta,2026-12-03,1,ProviderError: a página de ida e volta não carregou resultados
+2026-10-21_1315,2026-10-21T11:36:59+00:00,B,google_browser,idavolta,2026-12-09,1,ProviderError: a página de ida e volta não carregou resultados
+2026-10-21_1315,2026-10-21T11:39:00+00:00,B,google_browser,idavolta,2026-11-13,1,ProviderError: a página de ida e volta não carregou resultados
