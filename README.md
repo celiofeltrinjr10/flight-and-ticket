@@ -145,7 +145,7 @@ de cada dia. Cada dia ocupa uns 200 KB, então a temporada inteira cabe com folg
   - *Calendário*: menor preço só de ida por dia, do verde (barato) ao vermelho (caro). Toque num dia para ver
     as 3 melhores opções e a variação desde a coleta anterior.
   - *Comparar datas*: matriz ida × volta com o preço final de cada par. ○ = ida e volta conferida;
-    ≈ = estimada pelo desconto típico da companhia (calculado com as conferências dos últimos 7 dias).
+    ≈ = estimada pelo valor típico (mediana) de ida e volta já conferido para a mesma companhia nesta rota, nos últimos 7 dias.
   - *Companhias*: LATAM direto × Royal Air Maroc × melhor outra, por data.
   - *Top 10*: melhores combinações pelo score (preço final, duração total e tempo de conexão).
   - *Tendência*: evolução do menor preço e as datas que mais subiram ou caíram (desde a coleta anterior e
