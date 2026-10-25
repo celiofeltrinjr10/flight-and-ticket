@@ -3,3 +3,9 @@ __pycache__/
 *.pyc
 .env
 data/poc/
+node_modules/
+.next/
+.env*.local
+next-env.d.ts
+*.tsbuildinfo
+.vercel

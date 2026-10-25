@@ -39,7 +39,7 @@ class GoogleBrowser(Provider):
             }])
         return self._ctx
 
-    def _load(self, url: str) -> tuple[str, list[list]]:
+    def _load(self, url: str, expect_rpc: bool = True) -> tuple[str, list[list]]:
         """Abre a página; devolve (html, blocos de resultado carregados via JavaScript)."""
         page = self._context().new_page()
         rpc_texts: list[str] = []
@@ -53,9 +53,13 @@ class GoogleBrowser(Provider):
 
         page.on("response", on_response)
         try:
-            page.goto(url, wait_until="networkidle", timeout=60_000)
-            if not rpc_texts:  # às vezes a chamada chega depois do "networkidle"
-                page.wait_for_timeout(3_000)
+            page.goto(url, wait_until="domcontentloaded", timeout=60_000)
+            # A resposta com os preços chega pelo JavaScript da página: espera até 15 s por ela.
+            for _ in range(30 if expect_rpc else 0):
+                if rpc_texts:
+                    page.wait_for_timeout(800)  # deixa chegar eventuais blocos seguintes
+                    break
+                page.wait_for_timeout(500)
             html = page.content()
         except Exception as e:
             raise ProviderError(f"navegador: {e}") from e
@@ -86,7 +90,7 @@ class GoogleBrowser(Provider):
         )
         link = gflights.search_url(tfs, cfg.moeda)
         queried_at = datetime.now(timezone.utc)
-        html, payloads = self._load(link)
+        html, payloads = self._load(link, expect_rpc=False)
         if not payloads:  # resultado embutido na página
             payloads = [gflights.page_payload(html)]
         return self._itineraries(payloads, direction=direction, day=day, link=link,
@@ -109,7 +113,7 @@ class GoogleBrowser(Provider):
         html, payloads = self._load(link)
         if not payloads:
             gflights.page_payload(html)  # levanta erro se for bloqueio/consentimento
-            raise ProviderError("a página de ida e volta não carregou resultados")
+            raise gflights.NoResults("o Google não mostrou ida e volta para esta combinação")
         rets = self._itineraries(payloads, direction="volta", day=return_day, link=link,
                                  queried_at=queried_at)
         return [RoundTripQuote(total_price=r.price, ret=r, link=link)

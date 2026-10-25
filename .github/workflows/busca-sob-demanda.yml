@@ -1,7 +1,8 @@
 name: Busca sob demanda
+run-name: "Busca ${{ inputs.origem }}-${{ inputs.destino }} ${{ inputs.slug }}"
 
 # Actions → "Busca sob demanda" → Run workflow → preencha e confirme.
-# O resultado aparece em https://<usuário>.github.io/voos-bcn-sp/buscas/
+# O resultado aparece em https://<usuário>.github.io/flight-and-ticket/buscas/
 
 on:
   workflow_dispatch:
@@ -43,6 +44,10 @@ on:
         description: "Data-limite de chegada da ida (opcional)"
         required: false
         default: ""
+      slug:
+        description: "Identificador (preenchido pelo site; deixe vazio)"
+        required: false
+        default: ""
 
 permissions:
   contents: write
@@ -55,6 +60,18 @@ jobs:
   busca:
     runs-on: ubuntu-latest
     timeout-minutes: 60
+    env:
+      SERPAPI_KEY: ${{ secrets.SERPAPI_KEY }}
+      IN_ORIGEM: ${{ inputs.origem }}
+      IN_DESTINO: ${{ inputs.destino }}
+      IN_IDA: ${{ inputs.ida }}
+      IN_VOLTA: ${{ inputs.volta }}
+      IN_ADULTOS: ${{ inputs.adultos }}
+      IN_CLASSE: ${{ inputs.classe }}
+      IN_ESCALAS: ${{ inputs.max_escalas }}
+      IN_MOEDA: ${{ inputs.moeda }}
+      IN_LIMITE: ${{ inputs.data_limite }}
+      IN_SLUG: ${{ inputs.slug }}
     steps:
       - uses: actions/checkout@v4
 
@@ -63,50 +80,51 @@ jobs:
           python-version: "3.12"
           cache: pip
 
-      - name: Instalar dependências
+      - name: Preparar
         run: |
           pip install -r requirements.txt
           python -m playwright install --with-deps chromium
-
-      - name: Buscar
-        id: busca
-        continue-on-error: true
-        env:
-          SERPAPI_KEY: ${{ secrets.SERPAPI_KEY }}
-          IN_ORIGEM: ${{ inputs.origem }}
-          IN_DESTINO: ${{ inputs.destino }}
-          IN_IDA: ${{ inputs.ida }}
-          IN_VOLTA: ${{ inputs.volta }}
-          IN_ADULTOS: ${{ inputs.adultos }}
-          IN_CLASSE: ${{ inputs.classe }}
-          IN_ESCALAS: ${{ inputs.max_escalas }}
-          IN_MOEDA: ${{ inputs.moeda }}
-          IN_LIMITE: ${{ inputs.data_limite }}
-        run: >
-          python -m tracker.collect --busca
-          --origem "$IN_ORIGEM" --destino "$IN_DESTINO"
-          --ida "$IN_IDA" --volta "$IN_VOLTA"
-          --adultos "$IN_ADULTOS" --classe "$IN_CLASSE"
-          --max-escalas "$IN_ESCALAS" --moeda "$IN_MOEDA"
-          --data-limite "$IN_LIMITE"
-
-      - name: Gerar páginas
-        run: python -m tracker.build_dashboard
-
-      - name: Salvar no repositório
-        run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data docs
+
+      # Os nomes destes passos aparecem para a pessoa na tela "buscando" do site.
+      - name: Consultar cada data
+        id: busca
+        continue-on-error: true
+        run: >
+          python -m tracker.collect --etapa A --busca
+          --origem "$IN_ORIGEM" --destino "$IN_DESTINO" --ida "$IN_IDA" --volta "$IN_VOLTA"
+          --adultos "$IN_ADULTOS" --classe "$IN_CLASSE" --max-escalas "$IN_ESCALAS"
+          --moeda "$IN_MOEDA" --data-limite "$IN_LIMITE" --slug "$IN_SLUG"
+
+      - name: Publicar preços de cada dia
+        if: steps.busca.outcome == 'success'
+        run: |
+          python -m tracker.build_dashboard
+          git add data docs painel.html
+          git commit -m "Busca $IN_ORIGEM-$IN_DESTINO (parcial) $(TZ=Europe/Madrid date +'%Y-%m-%d %H:%M')" || echo "Nada novo"
+          git pull --rebase && git push
+
+      - name: Conferir ida e volta
+        id: idavolta
+        if: steps.busca.outcome == 'success' && inputs.volta != ''
+        continue-on-error: true
+        run: >
+          python -m tracker.collect --etapa B --busca
+          --origem "$IN_ORIGEM" --destino "$IN_DESTINO" --ida "$IN_IDA" --volta "$IN_VOLTA"
+          --adultos "$IN_ADULTOS" --classe "$IN_CLASSE" --max-escalas "$IN_ESCALAS"
+          --moeda "$IN_MOEDA" --data-limite "$IN_LIMITE" --slug "$IN_SLUG"
+
+      - name: Montar o resultado
+        if: steps.busca.outcome == 'success'
+        run: |
+          python -m tracker.build_dashboard
+          git add data docs painel.html
           git commit -m "Busca $IN_ORIGEM-$IN_DESTINO $(TZ=Europe/Madrid date +'%Y-%m-%d %H:%M')" || echo "Nada novo"
-          git pull --rebase
-          git push
-        env:
-          IN_ORIGEM: ${{ inputs.origem }}
-          IN_DESTINO: ${{ inputs.destino }}
+          git pull --rebase && git push
 
       - name: Avisar se a busca falhou
         if: steps.busca.outcome == 'failure'
         run: |
-          echo "::error::A busca falhou. Veja o log do passo 'Buscar' (formato das datas/códigos?)"
+          echo "::error::A busca falhou. Veja o log do passo 'Consultar cada data' (formato das datas/códigos?)"
           exit 1
