@@ -60,4 +60,6 @@ class GoogleFastFlights(Provider):
                 ))
             except (IndexError, TypeError, ValueError) as e:
                 raise ProviderError(f"formato inesperado do Google: {e}") from e
+        if not out:
+            raise gflights.EmptyResult("o Google respondeu sem nenhum voo para esta data")
         return out
