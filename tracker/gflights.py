@@ -26,6 +26,11 @@ class PageError(Exception):
     """A página veio, mas sem os dados esperados."""
 
 
+class EmptyResult(PageError):
+    """O Google respondeu "nenhum voo" para uma busca só de ida. Numa rota servida todo dia isso quase
+    sempre é limitação temporária do Google, não falta de voos: tenta de novo e usa a fonte reserva."""
+
+
 class NoResults(PageError):
     """A página carregou, mas o Google não trouxe opções (ex.: ida e volta não vendida junto)."""
 

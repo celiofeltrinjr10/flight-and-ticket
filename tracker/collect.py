@@ -26,7 +26,7 @@ from zoneinfo import ZoneInfo
 from . import busca
 from . import config as config_mod
 from .filters import evaluate, fmt_min
-from .gflights import Blocked, NoResults
+from .gflights import Blocked, EmptyResult, NoResults
 from .models import CSV_FIELDS, Itinerary, to_row
 from .providers import Provider, get_provider
 from .scoring import combo_metrics, score
@@ -88,6 +88,8 @@ class Runner:
                 log(f"  ! {etapa} {direction} {day} tentativa {attempt}/{cfg.tentativas}: {msg[:160]}")
                 if "não definida" in msg or "não implementada" in msg or isinstance(e, NoResults):
                     break  # repetir não adianta (configuração ou combinação sem resultado)
+                if isinstance(e, EmptyResult) and attempt >= 2:
+                    break  # resposta vazia: uma nova tentativa e depois a fonte reserva
                 if attempt < cfg.tentativas:
                     wait = cfg.espera_base_s * 3 ** (attempt - 1) * (2 if isinstance(e, Blocked) else 1)
                     time.sleep(wait + random.uniform(0, 3))

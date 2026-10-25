@@ -93,8 +93,10 @@ class GoogleBrowser(Provider):
         html, payloads = self._load(link, expect_rpc=False)
         if not payloads:  # resultado embutido na página
             payloads = [gflights.page_payload(html)]
-        return self._itineraries(payloads, direction=direction, day=day, link=link,
-                                 queried_at=queried_at)
+        out = self._itineraries(payloads, direction=direction, day=day, link=link, queried_at=queried_at)
+        if not out:
+            raise gflights.EmptyResult("o Google respondeu sem nenhum voo para esta data")
+        return out
 
     def search_roundtrip(self, outbound: Itinerary, return_day: date) -> list[RoundTripQuote]:
         cfg = self.cfg
