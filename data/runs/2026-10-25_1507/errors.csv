@@ -1,0 +1,7 @@
+run_id,quando,etapa,fonte,direcao,data,tentativa,erro
+2026-10-25_1507,2026-10-25T14:15:34+00:00,A,google_ff,volta,2027-01-19,1,EmptyResult: o Google respondeu sem nenhum voo para esta data
+2026-10-25_1507,2026-10-25T14:15:56+00:00,A,google_ff,volta,2027-01-19,2,EmptyResult: o Google respondeu sem nenhum voo para esta data
+2026-10-25_1507,2026-10-25T14:16:05+00:00,A,google_browser,volta,2027-01-19,1,EmptyResult: o Google respondeu sem nenhum voo para esta data
+2026-10-25_1507,2026-10-25T14:16:34+00:00,A,google_ff,volta,2027-01-20,1,EmptyResult: o Google respondeu sem nenhum voo para esta data
+2026-10-25_1507,2026-10-25T14:17:30+00:00,A,google_ff,volta,2027-01-25,1,EmptyResult: o Google respondeu sem nenhum voo para esta data
+2026-10-25_1507,2026-10-25T14:22:19+00:00,B,google_browser,idavolta,2026-11-25,1,NoResults: o Google não mostrou ida e volta para esta combinação
