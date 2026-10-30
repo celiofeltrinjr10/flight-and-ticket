@@ -1,0 +1,13 @@
+run_id,quando,etapa,fonte,direcao,data,tentativa,erro
+2026-10-30_1314,2026-10-30T12:27:24+00:00,B,google_browser,idavolta,2026-11-14,1,NoResults: o Google não mostrou ida e volta para esta combinação
+2026-10-30_1314,2026-10-30T12:27:44+00:00,B,google_browser,idavolta,2026-11-17,1,NoResults: o Google não mostrou ida e volta para esta combinação
+2026-10-30_1314,2026-10-30T12:27:52+00:00,B,google_browser,idavolta,2026-11-25,1,NoResults: o Google não mostrou ida e volta para esta combinação
+2026-10-30_1314,2026-10-30T12:29:42+00:00,B,google_browser,idavolta,2026-12-01,1,NoResults: o Google não mostrou ida e volta para esta combinação
+2026-10-30_1314,2026-10-30T12:30:04+00:00,B,google_browser,idavolta,2026-12-01,1,NoResults: o Google não mostrou ida e volta para esta combinação
+2026-10-30_1314,2026-10-30T12:30:45+00:00,B,google_browser,idavolta,2026-11-16,1,NoResults: o Google não mostrou ida e volta para esta combinação
+2026-10-30_1314,2026-10-30T12:31:19+00:00,B,google_browser,idavolta,2026-12-10,1,NoResults: o Google não mostrou ida e volta para esta combinação
+2026-10-30_1314,2026-10-30T12:31:54+00:00,B,google_browser,idavolta,2026-12-01,1,NoResults: o Google não mostrou ida e volta para esta combinação
+2026-10-30_1314,2026-10-30T12:32:14+00:00,B,google_browser,idavolta,2026-11-16,1,NoResults: o Google não mostrou ida e volta para esta combinação
+2026-10-30_1314,2026-10-30T12:32:34+00:00,B,google_browser,idavolta,2026-11-20,1,NoResults: o Google não mostrou ida e volta para esta combinação
+2026-10-30_1314,2026-10-30T12:35:20+00:00,B,google_browser,idavolta,2026-11-26,1,NoResults: o Google não mostrou ida e volta para esta combinação
+2026-10-30_1314,2026-10-30T12:38:34+00:00,B,google_browser,idavolta,2026-12-02,1,NoResults: o Google não mostrou ida e volta para esta combinação
