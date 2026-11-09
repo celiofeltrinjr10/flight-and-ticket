@@ -1,0 +1,20 @@
+run_id,quando,etapa,fonte,direcao,data,tentativa,erro
+2026-11-09_1620,2026-11-09T15:20:59+00:00,A,google_ff,ida,2026-11-17,1,EmptyResult: o Google respondeu sem nenhum voo para esta data
+2026-11-09_1620,2026-11-09T15:21:55+00:00,A,google_ff,ida,2026-11-22,1,EmptyResult: o Google respondeu sem nenhum voo para esta data
+2026-11-09_1620,2026-11-09T15:26:31+00:00,A,google_ff,volta,2027-01-08,1,EmptyResult: o Google respondeu sem nenhum voo para esta data
+2026-11-09_1620,2026-11-09T15:27:07+00:00,A,google_ff,volta,2027-01-10,1,EmptyResult: o Google respondeu sem nenhum voo para esta data
+2026-11-09_1620,2026-11-09T15:27:58+00:00,A,google_ff,volta,2027-01-14,1,EmptyResult: o Google respondeu sem nenhum voo para esta data
+2026-11-09_1620,2026-11-09T15:29:15+00:00,A,google_ff,volta,2027-01-22,1,EmptyResult: o Google respondeu sem nenhum voo para esta data
+2026-11-09_1620,2026-11-09T15:30:31+00:00,A,google_ff,volta,2027-01-30,1,EmptyResult: o Google respondeu sem nenhum voo para esta data
+2026-11-09_1620,2026-11-09T15:30:57+00:00,A,google_ff,volta,2027-01-31,1,EmptyResult: o Google respondeu sem nenhum voo para esta data
+2026-11-09_1620,2026-11-09T15:31:18+00:00,A,google_ff,volta,2027-01-31,2,EmptyResult: o Google respondeu sem nenhum voo para esta data
+2026-11-09_1620,2026-11-09T15:31:25+00:00,A,google_browser,volta,2027-01-31,1,EmptyResult: o Google respondeu sem nenhum voo para esta data
+2026-11-09_1620,2026-11-09T15:32:05+00:00,A,google_ff,volta,2027-02-03,1,EmptyResult: o Google respondeu sem nenhum voo para esta data
+2026-11-09_1620,2026-11-09T15:32:36+00:00,A,google_ff,volta,2027-02-04,1,EmptyResult: o Google respondeu sem nenhum voo para esta data
+2026-11-09_1620,2026-11-09T15:33:40+00:00,A,google_ff,volta,2027-02-10,1,EmptyResult: o Google respondeu sem nenhum voo para esta data
+2026-11-09_1620,2026-11-09T15:34:04+00:00,A,google_ff,volta,2027-02-10,2,EmptyResult: o Google respondeu sem nenhum voo para esta data
+2026-11-09_1620,2026-11-09T15:34:12+00:00,A,google_browser,volta,2027-02-10,1,EmptyResult: o Google respondeu sem nenhum voo para esta data
+2026-11-09_1620,2026-11-09T15:36:34+00:00,B,google_browser,idavolta,2026-12-14,1,NoResults: o Google não mostrou ida e volta para esta combinação
+2026-11-09_1620,2026-11-09T15:41:31+00:00,B,google_browser,idavolta,2026-11-19,1,NoResults: o Google não mostrou ida e volta para esta combinação
+2026-11-09_1620,2026-11-09T15:46:18+00:00,B,google_browser,idavolta,2026-11-22,1,NoResults: o Google não mostrou ida e volta para esta combinação
+2026-11-09_1620,2026-11-09T15:46:26+00:00,B,google_browser,idavolta,2026-11-22,1,NoResults: o Google não mostrou ida e volta para esta combinação
