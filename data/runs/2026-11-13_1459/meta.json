@@ -1,0 +1,19 @@
+{
+  "run_id": "2026-11-13_1459",
+  "inicio": "2026-11-13T13:59:31+00:00",
+  "fim": "2026-11-13T14:22:58+00:00",
+  "poc": false,
+  "etapas": "AB",
+  "fontes": {
+    "etapa_a": "google_ff",
+    "etapa_a_reserva": "google_browser",
+    "etapa_b": "google_browser"
+  },
+  "buscas": 149,
+  "falhas": 23,
+  "tentativas_com_erro": 31,
+  "itinerarios": 883,
+  "itinerarios_validos": 883,
+  "combinacoes_ida_volta": 60,
+  "erro_fatal": ""
+}
