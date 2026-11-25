@@ -1,0 +1,71 @@
+run_id,quando,etapa,fonte,direcao,data,tentativa,erro
+2026-11-25_1751,2026-11-25T16:51:28+00:00,A,google_ff,ida,2026-11-25,1,EmptyResult: o Google respondeu sem nenhum voo para esta data
+2026-11-25_1751,2026-11-25T16:52:03+00:00,A,google_ff,ida,2026-11-27,1,EmptyResult: o Google respondeu sem nenhum voo para esta data
+2026-11-25_1751,2026-11-25T16:52:24+00:00,A,google_ff,ida,2026-11-27,2,EmptyResult: o Google respondeu sem nenhum voo para esta data
+2026-11-25_1751,2026-11-25T16:52:32+00:00,A,google_browser,ida,2026-11-27,1,EmptyResult: o Google respondeu sem nenhum voo para esta data
+2026-11-25_1751,2026-11-25T16:53:27+00:00,A,google_ff,ida,2026-12-01,1,EmptyResult: o Google respondeu sem nenhum voo para esta data
+2026-11-25_1751,2026-11-25T16:53:51+00:00,A,google_ff,ida,2026-12-01,2,PageError: página sem o bloco de resultados (título: 'Verifying...')
+2026-11-25_1751,2026-11-25T16:54:53+00:00,A,google_ff,ida,2026-12-02,1,EmptyResult: o Google respondeu sem nenhum voo para esta data
+2026-11-25_1751,2026-11-25T16:55:21+00:00,A,google_ff,ida,2026-12-03,1,EmptyResult: o Google respondeu sem nenhum voo para esta data
+2026-11-25_1751,2026-11-25T16:55:44+00:00,A,google_ff,ida,2026-12-03,2,EmptyResult: o Google respondeu sem nenhum voo para esta data
+2026-11-25_1751,2026-11-25T16:56:05+00:00,A,google_ff,ida,2026-12-05,1,EmptyResult: o Google respondeu sem nenhum voo para esta data
+2026-11-25_1751,2026-11-25T16:56:35+00:00,A,google_ff,ida,2026-12-06,1,EmptyResult: o Google respondeu sem nenhum voo para esta data
+2026-11-25_1751,2026-11-25T16:56:59+00:00,A,google_ff,ida,2026-12-06,2,EmptyResult: o Google respondeu sem nenhum voo para esta data
+2026-11-25_1751,2026-11-25T16:57:43+00:00,A,google_ff,ida,2026-12-11,1,EmptyResult: o Google respondeu sem nenhum voo para esta data
+2026-11-25_1751,2026-11-25T16:58:21+00:00,A,google_ff,ida,2026-12-13,1,EmptyResult: o Google respondeu sem nenhum voo para esta data
+2026-11-25_1751,2026-11-25T16:59:01+00:00,A,google_ff,ida,2026-12-16,1,EmptyResult: o Google respondeu sem nenhum voo para esta data
+2026-11-25_1751,2026-11-25T16:59:29+00:00,A,google_ff,ida,2026-12-17,1,EmptyResult: o Google respondeu sem nenhum voo para esta data
+2026-11-25_1751,2026-11-25T17:00:01+00:00,A,google_ff,ida,2026-12-18,1,EmptyResult: o Google respondeu sem nenhum voo para esta data
+2026-11-25_1751,2026-11-25T17:00:41+00:00,A,google_ff,ida,2026-12-21,1,EmptyResult: o Google respondeu sem nenhum voo para esta data
+2026-11-25_1751,2026-11-25T17:01:05+00:00,A,google_ff,ida,2026-12-21,2,EmptyResult: o Google respondeu sem nenhum voo para esta data
+2026-11-25_1751,2026-11-25T17:01:30+00:00,A,google_ff,volta,2027-01-01,1,EmptyResult: o Google respondeu sem nenhum voo para esta data
+2026-11-25_1751,2026-11-25T17:02:09+00:00,A,google_ff,volta,2027-01-03,1,EmptyResult: o Google respondeu sem nenhum voo para esta data
+2026-11-25_1751,2026-11-25T17:02:32+00:00,A,google_ff,volta,2027-01-03,2,EmptyResult: o Google respondeu sem nenhum voo para esta data
+2026-11-25_1751,2026-11-25T17:02:41+00:00,A,google_browser,volta,2027-01-03,1,EmptyResult: o Google respondeu sem nenhum voo para esta data
+2026-11-25_1751,2026-11-25T17:03:03+00:00,A,google_browser,volta,2027-01-03,2,EmptyResult: o Google respondeu sem nenhum voo para esta data
+2026-11-25_1751,2026-11-25T17:03:08+00:00,A,google_ff,volta,2027-01-04,1,EmptyResult: o Google respondeu sem nenhum voo para esta data
+2026-11-25_1751,2026-11-25T17:03:32+00:00,A,google_ff,volta,2027-01-04,2,EmptyResult: o Google respondeu sem nenhum voo para esta data
+2026-11-25_1751,2026-11-25T17:03:42+00:00,A,google_ff,volta,2027-01-05,1,PageError: página sem o bloco de resultados (título: 'Verifying...')
+2026-11-25_1751,2026-11-25T17:04:10+00:00,A,google_ff,volta,2027-01-06,1,EmptyResult: o Google respondeu sem nenhum voo para esta data
+2026-11-25_1751,2026-11-25T17:04:32+00:00,A,google_ff,volta,2027-01-06,2,EmptyResult: o Google respondeu sem nenhum voo para esta data
+2026-11-25_1751,2026-11-25T17:04:44+00:00,A,google_ff,volta,2027-01-07,1,EmptyResult: o Google respondeu sem nenhum voo para esta data
+2026-11-25_1751,2026-11-25T17:05:13+00:00,A,google_ff,volta,2027-01-08,1,EmptyResult: o Google respondeu sem nenhum voo para esta data
+2026-11-25_1751,2026-11-25T17:05:52+00:00,A,google_ff,volta,2027-01-10,1,EmptyResult: o Google respondeu sem nenhum voo para esta data
+2026-11-25_1751,2026-11-25T17:06:13+00:00,A,google_ff,volta,2027-01-10,2,PageError: página sem o bloco de resultados (título: 'Verifying...')
+2026-11-25_1751,2026-11-25T17:07:21+00:00,A,google_ff,volta,2027-01-12,1,EmptyResult: o Google respondeu sem nenhum voo para esta data
+2026-11-25_1751,2026-11-25T17:07:50+00:00,A,google_ff,volta,2027-01-13,1,EmptyResult: o Google respondeu sem nenhum voo para esta data
+2026-11-25_1751,2026-11-25T17:08:22+00:00,A,google_ff,volta,2027-01-14,1,EmptyResult: o Google respondeu sem nenhum voo para esta data
+2026-11-25_1751,2026-11-25T17:08:53+00:00,A,google_ff,volta,2027-01-15,1,EmptyResult: o Google respondeu sem nenhum voo para esta data
+2026-11-25_1751,2026-11-25T17:09:13+00:00,A,google_ff,volta,2027-01-15,2,EmptyResult: o Google respondeu sem nenhum voo para esta data
+2026-11-25_1751,2026-11-25T17:09:18+00:00,A,google_browser,volta,2027-01-15,1,EmptyResult: o Google respondeu sem nenhum voo para esta data
+2026-11-25_1751,2026-11-25T17:09:39+00:00,A,google_browser,volta,2027-01-15,2,EmptyResult: o Google respondeu sem nenhum voo para esta data
+2026-11-25_1751,2026-11-25T17:09:46+00:00,A,google_ff,volta,2027-01-16,1,EmptyResult: o Google respondeu sem nenhum voo para esta data
+2026-11-25_1751,2026-11-25T17:10:23+00:00,A,google_ff,volta,2027-01-18,1,EmptyResult: o Google respondeu sem nenhum voo para esta data
+2026-11-25_1751,2026-11-25T17:10:44+00:00,A,google_ff,volta,2027-01-18,2,EmptyResult: o Google respondeu sem nenhum voo para esta data
+2026-11-25_1751,2026-11-25T17:10:52+00:00,A,google_browser,volta,2027-01-18,1,EmptyResult: o Google respondeu sem nenhum voo para esta data
+2026-11-25_1751,2026-11-25T17:11:36+00:00,A,google_ff,volta,2027-01-22,1,EmptyResult: o Google respondeu sem nenhum voo para esta data
+2026-11-25_1751,2026-11-25T17:12:09+00:00,A,google_ff,volta,2027-01-23,1,EmptyResult: o Google respondeu sem nenhum voo para esta data
+2026-11-25_1751,2026-11-25T17:12:42+00:00,A,google_ff,volta,2027-01-25,1,EmptyResult: o Google respondeu sem nenhum voo para esta data
+2026-11-25_1751,2026-11-25T17:13:24+00:00,A,google_ff,volta,2027-01-28,1,EmptyResult: o Google respondeu sem nenhum voo para esta data
+2026-11-25_1751,2026-11-25T17:13:53+00:00,A,google_ff,volta,2027-01-29,1,EmptyResult: o Google respondeu sem nenhum voo para esta data
+2026-11-25_1751,2026-11-25T17:14:20+00:00,A,google_ff,volta,2027-01-30,1,EmptyResult: o Google respondeu sem nenhum voo para esta data
+2026-11-25_1751,2026-11-25T17:15:31+00:00,A,google_ff,volta,2027-02-06,1,EmptyResult: o Google respondeu sem nenhum voo para esta data
+2026-11-25_1751,2026-11-25T17:16:29+00:00,A,google_ff,volta,2027-02-12,1,EmptyResult: o Google respondeu sem nenhum voo para esta data
+2026-11-25_1751,2026-11-25T17:16:59+00:00,A,google_ff,volta,2027-02-13,1,EmptyResult: o Google respondeu sem nenhum voo para esta data
+2026-11-25_1751,2026-11-25T17:18:04+00:00,B,google_browser,idavolta,2026-12-07,1,NoResults: o Google não mostrou ida e volta para esta combinação
+2026-11-25_1751,2026-11-25T17:18:23+00:00,B,google_browser,idavolta,2026-11-26,1,NoResults: o Google não mostrou ida e volta para esta combinação
+2026-11-25_1751,2026-11-25T17:19:11+00:00,B,google_browser,idavolta,2026-11-30,1,NoResults: o Google não mostrou ida e volta para esta combinação
+2026-11-25_1751,2026-11-25T17:21:53+00:00,B,google_browser,idavolta,2026-12-06,1,NoResults: o Google não mostrou ida e volta para esta combinação
+2026-11-25_1751,2026-11-25T17:22:13+00:00,B,google_browser,idavolta,2026-12-07,1,NoResults: o Google não mostrou ida e volta para esta combinação
+2026-11-25_1751,2026-11-25T17:22:46+00:00,B,google_browser,idavolta,2026-12-09,1,NoResults: o Google não mostrou ida e volta para esta combinação
+2026-11-25_1751,2026-11-25T17:23:08+00:00,B,google_browser,idavolta,2026-12-10,1,NoResults: o Google não mostrou ida e volta para esta combinação
+2026-11-25_1751,2026-11-25T17:23:17+00:00,B,google_browser,idavolta,2026-12-10,1,NoResults: o Google não mostrou ida e volta para esta combinação
+2026-11-25_1751,2026-11-25T17:23:38+00:00,B,google_browser,idavolta,2026-11-27,1,NoResults: o Google não mostrou ida e volta para esta combinação
+2026-11-25_1751,2026-11-25T17:23:44+00:00,B,google_browser,idavolta,2026-12-10,1,NoResults: o Google não mostrou ida e volta para esta combinação
+2026-11-25_1751,2026-11-25T17:24:05+00:00,B,google_browser,idavolta,2026-12-02,1,NoResults: o Google não mostrou ida e volta para esta combinação
+2026-11-25_1751,2026-11-25T17:24:32+00:00,B,google_browser,idavolta,2026-12-11,1,NoResults: o Google não mostrou ida e volta para esta combinação
+2026-11-25_1751,2026-11-25T17:24:38+00:00,B,google_browser,idavolta,2026-11-29,1,NoResults: o Google não mostrou ida e volta para esta combinação
+2026-11-25_1751,2026-11-25T17:25:07+00:00,B,google_browser,idavolta,2026-12-11,1,NoResults: o Google não mostrou ida e volta para esta combinação
+2026-11-25_1751,2026-11-25T17:25:36+00:00,B,google_browser,idavolta,2026-12-04,1,NoResults: o Google não mostrou ida e volta para esta combinação
+2026-11-25_1751,2026-11-25T17:25:43+00:00,B,google_browser,idavolta,2026-11-28,1,NoResults: o Google não mostrou ida e volta para esta combinação
+2026-11-25_1751,2026-11-25T17:28:21+00:00,B,google_browser,idavolta,2026-12-13,1,NoResults: o Google não mostrou ida e volta para esta combinação
