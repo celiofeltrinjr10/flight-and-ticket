@@ -1,0 +1,34 @@
+run_id,quando,etapa,fonte,direcao,data,tentativa,erro
+2026-11-26_1728,2026-11-26T16:29:19+00:00,A,google_ff,ida,2026-11-30,1,PageError: página sem o bloco de resultados (título: 'Verifying...')
+2026-11-26_1728,2026-11-26T16:29:58+00:00,A,google_ff,ida,2026-12-03,1,EmptyResult: o Google respondeu sem nenhum voo para esta data
+2026-11-26_1728,2026-11-26T16:30:22+00:00,A,google_ff,ida,2026-12-03,2,EmptyResult: o Google respondeu sem nenhum voo para esta data
+2026-11-26_1728,2026-11-26T16:30:34+00:00,A,google_ff,ida,2026-12-04,1,EmptyResult: o Google respondeu sem nenhum voo para esta data
+2026-11-26_1728,2026-11-26T16:30:57+00:00,A,google_ff,ida,2026-12-04,2,EmptyResult: o Google respondeu sem nenhum voo para esta data
+2026-11-26_1728,2026-11-26T16:31:03+00:00,A,google_browser,ida,2026-12-04,1,EmptyResult: o Google respondeu sem nenhum voo para esta data
+2026-11-26_1728,2026-11-26T16:31:27+00:00,A,google_browser,ida,2026-12-04,2,EmptyResult: o Google respondeu sem nenhum voo para esta data
+2026-11-26_1728,2026-11-26T16:31:54+00:00,A,google_ff,ida,2026-12-08,1,EmptyResult: o Google respondeu sem nenhum voo para esta data
+2026-11-26_1728,2026-11-26T16:32:24+00:00,A,google_ff,ida,2026-12-09,1,EmptyResult: o Google respondeu sem nenhum voo para esta data
+2026-11-26_1728,2026-11-26T16:32:56+00:00,A,google_ff,ida,2026-12-10,1,EmptyResult: o Google respondeu sem nenhum voo para esta data
+2026-11-26_1728,2026-11-26T16:35:13+00:00,A,google_ff,volta,2027-01-04,1,EmptyResult: o Google respondeu sem nenhum voo para esta data
+2026-11-26_1728,2026-11-26T16:36:51+00:00,A,google_ff,volta,2027-01-15,1,EmptyResult: o Google respondeu sem nenhum voo para esta data
+2026-11-26_1728,2026-11-26T16:37:35+00:00,A,google_ff,volta,2027-01-18,1,EmptyResult: o Google respondeu sem nenhum voo para esta data
+2026-11-26_1728,2026-11-26T16:38:17+00:00,A,google_ff,volta,2027-01-21,1,EmptyResult: o Google respondeu sem nenhum voo para esta data
+2026-11-26_1728,2026-11-26T16:38:43+00:00,A,google_ff,volta,2027-01-22,1,EmptyResult: o Google respondeu sem nenhum voo para esta data
+2026-11-26_1728,2026-11-26T16:39:48+00:00,A,google_ff,volta,2027-01-29,1,PageError: página sem o bloco de resultados (título: 'Verifying...')
+2026-11-26_1728,2026-11-26T16:40:19+00:00,A,google_ff,volta,2027-01-30,1,PageError: página sem o bloco de resultados (título: 'Verifying...')
+2026-11-26_1728,2026-11-26T16:40:57+00:00,A,google_ff,volta,2027-02-01,1,EmptyResult: o Google respondeu sem nenhum voo para esta data
+2026-11-26_1728,2026-11-26T16:41:37+00:00,A,google_ff,volta,2027-02-04,1,EmptyResult: o Google respondeu sem nenhum voo para esta data
+2026-11-26_1728,2026-11-26T16:42:22+00:00,A,google_ff,volta,2027-02-08,1,EmptyResult: o Google respondeu sem nenhum voo para esta data
+2026-11-26_1728,2026-11-26T16:43:53+00:00,B,google_browser,idavolta,2026-11-30,1,NoResults: o Google não mostrou ida e volta para esta combinação
+2026-11-26_1728,2026-11-26T16:44:10+00:00,B,google_browser,idavolta,2026-12-09,1,NoResults: o Google não mostrou ida e volta para esta combinação
+2026-11-26_1728,2026-11-26T16:45:54+00:00,B,google_browser,idavolta,2026-11-28,1,NoResults: o Google não mostrou ida e volta para esta combinação
+2026-11-26_1728,2026-11-26T16:47:42+00:00,B,google_browser,idavolta,2026-12-01,1,NoResults: o Google não mostrou ida e volta para esta combinação
+2026-11-26_1728,2026-11-26T16:48:16+00:00,B,google_browser,idavolta,2026-12-09,1,NoResults: o Google não mostrou ida e volta para esta combinação
+2026-11-26_1728,2026-11-26T16:48:37+00:00,B,google_browser,idavolta,2026-12-10,1,NoResults: o Google não mostrou ida e volta para esta combinação
+2026-11-26_1728,2026-11-26T16:50:00+00:00,B,google_browser,idavolta,2026-11-30,1,NoResults: o Google não mostrou ida e volta para esta combinação
+2026-11-26_1728,2026-11-26T16:50:51+00:00,B,google_browser,idavolta,2026-11-30,1,NoResults: o Google não mostrou ida e volta para esta combinação
+2026-11-26_1728,2026-11-26T16:52:09+00:00,B,google_browser,idavolta,2026-12-16,1,NoResults: o Google não mostrou ida e volta para esta combinação
+2026-11-26_1728,2026-11-26T16:52:25+00:00,B,google_browser,idavolta,2026-12-12,1,NoResults: o Google não mostrou ida e volta para esta combinação
+2026-11-26_1728,2026-11-26T16:53:00+00:00,B,google_browser,idavolta,2026-12-05,1,NoResults: o Google não mostrou ida e volta para esta combinação
+2026-11-26_1728,2026-11-26T16:54:34+00:00,B,google_browser,idavolta,2026-12-23,1,NoResults: o Google não mostrou ida e volta para esta combinação
+2026-11-26_1728,2026-11-26T16:55:25+00:00,B,google_browser,idavolta,2026-12-14,1,NoResults: o Google não mostrou ida e volta para esta combinação
